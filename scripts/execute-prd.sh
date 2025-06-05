@@ -72,9 +72,14 @@ EOF
     chmod +x "$wrapper_script"
     
     # Open new terminal window to run the wrapper script
-    osascript -e "tell application \"Terminal\"
+    osascript -e "tell application \"Warp\"
         activate
-        do script \"$wrapper_script\"
+        tell application \"System Events\"
+            keystroke \"t\" using command down
+            delay 0.5
+            keystroke \"$wrapper_script\"
+            keystroke return
+        end tell
     end tell"
     
     echo -e "${GREEN}✓ Opened Claude for $prd_id${NC}"
