@@ -6,24 +6,30 @@
 # Check if PRD_ID was provided as argument
 if [ -n "$1" ]; then
     PRD_ID="$1"
-    osascript -e "tell application \"Warp\"
-        activate
-        tell application \"System Events\"
-            keystroke \"t\" using command down
-            delay 0.5
-            keystroke \"cd /Users/kal/GitHub/SellerSmart-Architecture && ./scripts/execute-prd.sh $PRD_ID\"
-            keystroke return
-        end tell
-    end tell"
+    osascript << EOF
+tell application "Warp" to activate
+delay 0.5
+tell application "System Events"
+    tell process "Warp"
+        keystroke "n" using {command down}
+        delay 0.5
+        keystroke "cd /Users/kal/GitHub/SellerSmart-Architecture && ./scripts/execute-prd.sh $PRD_ID"
+        keystroke return
+    end tell
+end tell
+EOF
 else
     # No PRD_ID provided, execute all PRDs
-    osascript -e 'tell application "Warp"
-        activate
-        tell application "System Events"
-            keystroke "t" using command down
-            delay 0.5
-            keystroke "cd /Users/kal/GitHub/SellerSmart-Architecture && ./scripts/execute-prd.sh"
-            keystroke return
-        end tell
-    end tell'
+    osascript << 'EOF'
+tell application "Warp" to activate
+delay 0.5
+tell application "System Events"
+    tell process "Warp"
+        keystroke "n" using {command down}
+        delay 0.5
+        keystroke "cd /Users/kal/GitHub/SellerSmart-Architecture && ./scripts/execute-prd.sh"
+        keystroke return
+    end tell
+end tell
+EOF
 fi

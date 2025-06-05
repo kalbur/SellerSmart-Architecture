@@ -195,16 +195,19 @@ EOF
     # Make the wrapper script executable
     chmod +x "$wrapper_script"
     
-    # Open new terminal window to run the wrapper script
-    osascript -e "tell application \"Warp\"
-        activate
-        tell application \"System Events\"
-            keystroke \"t\" using command down
-            delay 0.5
-            keystroke \"$wrapper_script\"
-            keystroke return
-        end tell
-    end tell"
+    # Open new Warp window to run the wrapper script
+    osascript << EOF
+tell application "Warp" to activate
+delay 0.5
+tell application "System Events"
+    tell process "Warp"
+        keystroke "n" using {command down}
+        delay 0.5
+        keystroke "$wrapper_script"
+        keystroke return
+    end tell
+end tell
+EOF
     
     echo -e "${GREEN}✓ Opened Claude for $repo${NC}"
     
@@ -253,16 +256,19 @@ EOF
     # Make the wrapper script executable
     chmod +x "$wrapper_script"
     
-    # Open new terminal window to run the wrapper script
-    osascript -e "tell application \"Warp\"
-        activate
-        tell application \"System Events\"
-            keystroke \"t\" using command down
-            delay 0.5
-            keystroke \"$wrapper_script\"
-            keystroke return
-        end tell
-    end tell"
+    # Open new Warp window to run the wrapper script
+    osascript << EOF
+tell application "Warp" to activate
+delay 0.5
+tell application "System Events"
+    tell process "Warp"
+        keystroke "n" using {command down}
+        delay 0.5
+        keystroke "$wrapper_script"
+        keystroke return
+    end tell
+end tell
+EOF
     
     echo -e "${GREEN}✓ Opened Claude for quick commit in $repo${NC}"
     
