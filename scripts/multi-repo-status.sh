@@ -189,9 +189,6 @@ IMPORTANT:
 $(if [[ "$wait_for_ci" == "true" ]]; then echo "- After pushing, monitor CI and fix any failures"; fi)
 
 Start by running: git status -s"
-
-# Clean up
-rm -f $wrapper_script
 EOF
     
     # Make the wrapper script executable
@@ -204,6 +201,9 @@ EOF
     end tell"
     
     echo -e "${GREEN}✓ Opened Claude for $repo${NC}"
+    
+    # Schedule cleanup of wrapper script after 5 seconds
+    (sleep 5 && rm -f "$wrapper_script") &
 }
 
 # Function for quick commit-all using Claude
@@ -242,9 +242,6 @@ IMPORTANT:
 - Fix all hook failures before proceeding
 
 Start by running: git status"
-
-# Clean up
-rm -f $wrapper_script
 EOF
     
     # Make the wrapper script executable
@@ -257,6 +254,9 @@ EOF
     end tell"
     
     echo -e "${GREEN}✓ Opened Claude for quick commit in $repo${NC}"
+    
+    # Schedule cleanup of wrapper script after 5 seconds
+    (sleep 5 && rm -f "$wrapper_script") &
 }
 # Function to commit all repos with changes using Claude
 commit_all_repos_with_claude() {
@@ -277,6 +277,8 @@ commit_all_repos_with_claude() {
     if [[ "$wait_for_ci" == "true" ]]; then
         echo -e "${PURPLE}CI monitoring is ENABLED - Claude will wait for CI to pass${NC}"
     fi
+    
+    echo -e "${CYAN}Note: Temporary wrapper scripts will be cleaned up automatically${NC}"
 }
 
 # Main execution
