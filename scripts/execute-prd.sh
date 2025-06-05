@@ -156,10 +156,13 @@ EOF
     # Replace the placeholder with actual PRD ID
     sed -i '' "s/PRD_ID_PLACEHOLDER/$prd_id/g" "$temp_prompt"
     
-    # Open new terminal window with Claude using the temp file
+    # Read the prompt content and escape it properly for shell
+    local prompt_content=$(cat "$temp_prompt" | sed "s/'/'\\\\''/g")
+    
+    # Open new terminal window with Claude
     osascript -e "tell application \"Terminal\"
         activate
-        do script \"cd /Users/kal/GitHub/SellerSmart-Architecture && claude --dangerously-skip-permissions < $temp_prompt && rm $temp_prompt\"
+        do script \"cd /Users/kal/GitHub/SellerSmart-Architecture && claude --dangerously-skip-permissions '$prompt_content' && rm $temp_prompt\"
     end tell"
     
     echo -e "${GREEN}✓ Opened Claude for $prd_id${NC}"
