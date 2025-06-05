@@ -1,25 +1,16 @@
 #!/bin/bash
 
 # SellerSmart PRD Execution Script
-# This script implements a PRD from the .prds/processing directory
+# Handles single or multiple PRDs with comprehensive testing
 
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
+PURPLE='\033[0;35m'
+CYAN='\033[0;36m'
 NC='\033[0m' # No Color
-
-# Check if PRD_ID is provided
-if [ -z "$1" ]; then
-    echo -e "${RED}No PRD_ID provided - launching multi-PRD mode${NC}"
-    echo ""
-    # Execute the multi-PRD script
-    exec "$0-multi"
-    exit 0
-fi
-
-PRD_ID="$1"
 
 # Check if we're in the correct directory
 if [[ ! -f "CLAUDE.md" ]]; then
@@ -28,32 +19,20 @@ if [[ ! -f "CLAUDE.md" ]]; then
     exit 1
 fi
 
-# Check if PRD file exists
-if [[ ! -f ".prds/processing/$PRD_ID.md" ]]; then
-    echo -e "${RED}Error: PRD file not found: .prds/processing/$PRD_ID.md${NC}"
-    echo ""
-    echo "Available PRDs in processing:"
-    ls -1 .prds/processing/*.md 2>/dev/null | sed 's|.prds/processing/||' | sed 's|.md||' || echo "  No PRDs found"
-    exit 1
-fi
-
-echo -e "${GREEN}Starting SellerSmart PRD Execution${NC}"
-echo -e "${BLUE}PRD ID: $PRD_ID${NC}"
-echo -e "${YELLOW}Architecture directory: $(pwd)${NC}"
-echo ""
-
-# Check if claude CLI is installed
-if ! command -v claude &> /dev/null; then
-    echo -e "${RED}Error: claude CLI is not installed${NC}"
-    echo "Please install it first: https://claude.ai/cli"
-    exit 1
-fi
-
-# Create the prompt
-PROMPT="# CLAUDE CODE EXECUTION PHASE
+# Function to execute a single PRD
+execute_prd() {
+    local prd_id=$1
+    
+    echo -e "${CYAN}Opening Claude for $prd_id...${NC}"
+    
+    # Create the prompt for this PRD
+    local prompt="# CLAUDE CODE EXECUTION PHASE
 
 ## CURRENT LOCATION
 You are in: /Users/kal/GitHub/SellerSmart-Architecture
+
+## EXECUTING PRD
+PRD ID: $prd_id
 
 ## SERVICE REPOSITORIES
 All services are located at: /Users/kal/GitHub/
@@ -66,7 +45,7 @@ All services are located at: /Users/kal/GitHub/
 - SellerSmart-SiteMonitor
 
 ## REQUIREMENTS  
-- Implement according to specific PRD: $PRD_ID
+- Implement according to specific PRD: $prd_id
 - Read CLAUDE.md for project context (in current directory)
 - Check off PRD items as completed
 - NO new features without updating PRD
@@ -77,7 +56,7 @@ All services are located at: /Users/kal/GitHub/
 1. Find and read PRD file:
    \`\`\`
    list_directory(\".prds/processing\")
-   read_file(\".prds/processing/$PRD_ID.md\")
+   read_file(\".prds/processing/$prd_id.md\")
    \`\`\`
 2. Update PRD status: PLANNING_COMPLETE → IN_PROGRESS
 3. Review codebase analysis section for implementation guidance
@@ -108,6 +87,33 @@ All services are located at: /Users/kal/GitHub/
    - All tests pass
    - Verify against success criteria
 
+## QUALITY ASSURANCE BEFORE COMPLETION
+Before marking PRD as complete, you MUST run and pass:
+
+### For JavaScript/TypeScript projects:
+- ESLint: \`npm run lint\` or \`yarn lint\`
+- TypeScript: \`npx tsc --noEmit\` (if TypeScript project)
+- Tests: \`npm test\` or \`yarn test\`
+- Build: \`npm run build\` or \`yarn build\`
+
+### For Python projects:
+- Black: \`black .\` (formatting)
+- Flake8: \`flake8\` (linting)
+- MyPy: \`mypy .\` (type checking)
+- Pytest: \`pytest\` (tests)
+
+### General checks:
+- No console.log statements in production code
+- No commented out code
+- All imports are used
+- No hardcoded values that should be config
+- API keys/secrets are in environment variables
+
+If ANY of these checks fail:
+1. Fix all issues
+2. Re-run the checks
+3. Only proceed when ALL checks pass
+
 ## CROSS-SERVICE CONSIDERATIONS
 - If PRD affects multiple services, implement in order:
   1. Backend services first (API, microservices)
@@ -118,6 +124,9 @@ All services are located at: /Users/kal/GitHub/
 ## COMPLETION CHECKLIST
 - [ ] All PRD checklist items marked complete
 - [ ] All tests written and passing
+- [ ] ESLint/Flake8 passing with no errors
+- [ ] TypeScript/MyPy passing with no errors
+- [ ] Build succeeds without warnings
 - [ ] No incomplete implementations
 - [ ] Documentation updated
 - [ ] Code follows conventions from CONVENTIONS.md
@@ -125,20 +134,88 @@ All services are located at: /Users/kal/GitHub/
 - [ ] PRD moved to completed folder
 
 ## FINAL STEPS
-1. Update PRD status to COMPLETED
-2. Move PRD: \`move_file(\".prds/processing/$PRD_ID.md\", \".prds/completed/${PRD_ID}_COMPLETED.md\")\`
-3. Add all changes to git in each affected repository
-4. Print \"IMPLEMENTATION COMPLETE - PRD ID: $PRD_ID - ALL ITEMS FINISHED\"
-5. Generate detailed PR description for each affected repository
+1. Run all quality checks one final time
+2. Update PRD status to COMPLETED
+3. Move PRD: \`move_file(\".prds/processing/$prd_id.md\", \".prds/completed/${prd_id}_COMPLETED.md\")\`
+4. Add all changes to git in each affected repository
+5. Print \"IMPLEMENTATION COMPLETE - PRD ID: $prd_id - ALL ITEMS FINISHED\"
+6. Generate detailed PR description for each affected repository
 
 ## IMPORTANT REMINDERS
 - Work from the SellerSmart-Architecture directory
 - Navigate to service directories as needed
 - Follow the patterns and examples in the PRD
-- Complete ALL items - no partial implementations"
+- Complete ALL items - no partial implementations
+- NEVER mark PRD complete until all tests/linting pass"
+    
+    # Open new terminal window with Claude for this PRD
+    osascript -e "tell application \"Terminal\"
+        activate
+        do script \"cd /Users/kal/GitHub/SellerSmart-Architecture && claude --dangerously-skip-permissions \\\"$prompt\\\"\"
+    end tell"
+    
+    echo -e "${GREEN}✓ Opened Claude for $prd_id${NC}"
+}
 
-# Run Claude with the prompt
-echo -e "${YELLOW}Launching Claude to execute PRD...${NC}"
-claude --dangerously-skip-permissions "$PROMPT"
+# Main execution
+echo -e "${GREEN}Starting SellerSmart PRD Execution${NC}"
+echo -e "${BLUE}═══════════════════════════════════════════════════════════════${NC}"
 
-echo -e "${GREEN}PRD execution process completed!${NC}"
+# Check if a specific PRD was provided
+if [[ -n "$1" ]]; then
+    # Single PRD execution
+    PRD_ID="$1"
+    
+    # Check if PRD file exists
+    if [[ ! -f ".prds/processing/$PRD_ID.md" ]]; then
+        echo -e "${RED}Error: PRD file not found: .prds/processing/$PRD_ID.md${NC}"
+        echo ""
+        echo "Available PRDs in processing:"
+        ls -1 .prds/processing/*.md 2>/dev/null | sed 's|.prds/processing/||' | sed 's|.md||' || echo "  No PRDs found"
+        exit 1
+    fi
+    
+    echo -e "${BLUE}Executing single PRD: $PRD_ID${NC}"
+    execute_prd "$PRD_ID"
+else
+    # Multi-PRD execution - execute ALL PRDs in processing
+    PRD_FILES=($(ls .prds/processing/*.md 2>/dev/null))
+    
+    if [[ ${#PRD_FILES[@]} -eq 0 ]]; then
+        echo -e "${YELLOW}No PRDs found in processing directory${NC}"
+        exit 0
+    fi
+    
+    # Display found PRDs
+    echo -e "${PURPLE}╔═══════════════════════════════════════════════════════════════╗${NC}"
+    echo -e "${PURPLE}║              MULTI-PRD EXECUTION MODE                         ║${NC}"
+    echo -e "${PURPLE}╚═══════════════════════════════════════════════════════════════╝${NC}"
+    
+    echo -e "\n${CYAN}Found ${#PRD_FILES[@]} PRD(s) to execute:${NC}"
+    for prd_file in "${PRD_FILES[@]}"; do
+        prd_id=$(basename "$prd_file" .md)
+        echo -e "  ${YELLOW}• $prd_id${NC}"
+    done
+    
+    echo -e "\n${CYAN}Opening separate Claude terminals for each PRD...${NC}"
+    
+    # Execute each PRD in its own terminal
+    for prd_file in "${PRD_FILES[@]}"; do
+        prd_id=$(basename "$prd_file" .md)
+        execute_prd "$prd_id"
+        # Small delay to prevent terminal overlap
+        sleep 0.5
+    done
+    
+    echo -e "\n${GREEN}✓ All PRDs are now being executed in separate terminals${NC}"
+    echo -e "${YELLOW}Each Claude instance will:${NC}"
+    echo -e "  • Read and analyze its PRD"
+    echo -e "  • Implement all requirements"
+    echo -e "  • Run all tests and linting"
+    echo -e "  • Fix any issues before completion"
+    echo -e "  • Mark checklist items as complete"
+    echo -e "  • Move PRD to completed when done"
+fi
+
+echo -e "\n${BLUE}═══════════════════════════════════════════════════════════════${NC}"
+echo -e "${GREEN}PRD execution process initiated!${NC}"
