@@ -1,8 +1,13 @@
 #!/bin/bash
 # Stream Deck launcher for SellerSmart Web dev server
-# Opens Terminal and starts npm run dev
+# Opens Warp and starts npm run dev
 
-osascript -e 'tell application "Terminal"
+osascript -e 'tell application "Warp"
     activate
-    do script "cd /Users/kal/GitHub/SellerSmart-Architecture && ./scripts/web-dev-server.sh"
+    tell application "System Events"
+        keystroke "t" using command down
+        delay 0.5
+        keystroke "cd /Users/kal/GitHub/SellerSmart-Architecture && ./scripts/web-dev-server.sh"
+        keystroke return
+    end tell
 end tell'

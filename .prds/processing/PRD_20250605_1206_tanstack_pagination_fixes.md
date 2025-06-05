@@ -215,3 +215,4 @@ const handlePageSizeChange = (newPageSize: number) => {
 **Effort Estimate**: 3-4 days
 **Dependencies**: None
 **Risk Level**: Low (UI/UX enhancement, no breaking changes)
+**Status**: IN_PROGRESS
