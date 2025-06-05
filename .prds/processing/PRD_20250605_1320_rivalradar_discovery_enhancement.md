@@ -188,7 +188,7 @@ const EnhancedDiscoveryCard: React.FC<EnhancedDiscoveryCardProps> = ({
   rival,
   isMonitored,
   onToggleMonitoring,
-  onCreateBrandScan
+  marketplace = 'uk'
 }) => {
   const [selectedTimeRange, setSelectedTimeRange] = useState('90D');
   const [visibleSeries, setVisibleSeries] = useState({
@@ -196,6 +196,16 @@ const EnhancedDiscoveryCard: React.FC<EnhancedDiscoveryCardProps> = ({
     reviews: true,
     feedbackScore: true
   });
+
+  // Brand action handler using existing BrandTaskDialog event system
+  const handleBrandClick = (brandName: string) => {
+    window.dispatchEvent(new CustomEvent("open-brand-dialog", { 
+      detail: { 
+        brand: brandName, 
+        marketplace: marketplace 
+      } 
+    }));
+  };
 
   return (
     <Card className="overflow-hidden border-border/50 bg-card/50 backdrop-blur-sm hover:border-primary/20 transition-colors">
@@ -205,7 +215,7 @@ const EnhancedDiscoveryCard: React.FC<EnhancedDiscoveryCardProps> = ({
             rival={rival}
             isMonitored={isMonitored}
             onToggleMonitoring={onToggleMonitoring}
-            onCreateBrandScan={onCreateBrandScan}
+            onBrandClick={handleBrandClick}
           />
           <RightSection 
             rival={rival}
@@ -300,31 +310,39 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({
 - [ ] Update search/filter state management
 - [ ] Add filter persistence to user preferences
 
-### **Phase 4: Interactive Features** ✅ Must Have
-- [ ] Implement brand click → BrandScan creation flow
+### **Phase 4: Brand Action Integration** ✅ Must Have
+- [ ] Implement clickable brand tags in discovery cards
+- [ ] Integrate with existing BrandTaskDialog event system
+- [ ] Add hover effects and visual feedback for brand interactions
+- [ ] Include brand logos with fallback support
+- [ ] Ensure marketplace context is passed to brand actions
+
+### **Phase 5: Interactive Features** ✅ Must Have
 - [ ] Add add/remove rival functionality directly in cards
 - [ ] Implement loading states for all async actions
 - [ ] Add error handling and user feedback
+- [ ] Test BrandScan and BrandWatch task creation from discovery cards
 
-### **Phase 5: Integration & Polish** ✅ Must Have
+### **Phase 6: Integration & Polish** ✅ Must Have
 - [ ] Replace existing discovery card component
 - [ ] Update RivalDiscovery to use EnhancedDiscoveryCard
 - [ ] Ensure responsive design for mobile/tablet
 - [ ] Add animation transitions matching SellerSmart patterns
 - [ ] Implement proper skeleton loading states
 
-### **Phase 6: Data Processing** ✅ Must Have
+### **Phase 7: Data Processing** ✅ Must Have
 - [ ] Enhance backend API to include historical performance data
 - [ ] Implement data transformation utilities
 - [ ] Add monitoring status tracking in search results
 - [ ] Optimize chart data processing for performance
 
-### **Phase 7: Testing & Validation** ✅ Should Have
+### **Phase 8: Testing & Validation** ✅ Should Have
 - [ ] Unit tests for new components
-- [ ] Integration tests for monitoring actions
+- [ ] Integration tests for monitoring actions and brand actions
 - [ ] Visual regression tests for design consistency
 - [ ] Performance testing for chart rendering
 - [ ] User acceptance testing with discovery workflow
+- [ ] Test BrandTaskDialog integration with discovery cards
 
 ## Success Criteria
 
@@ -332,8 +350,10 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({
 - Discovery cards display comprehensive competitor information at a glance
 - Multi-line performance charts show historical trends effectively
 - Add/remove rival actions work seamlessly without navigation
-- Brand click actions successfully trigger BrandScan creation
+- Brand click actions successfully trigger BrandTaskDialog with both BrandScan and BrandWatch options
+- Brand logos display correctly with fallback support
 - Filter excludes already monitored rivals correctly
+- Marketplace context is correctly passed to brand action dialogs
 
 ### **User Experience Requirements**
 - Discovery section visual design matches SellerSmart detail views
@@ -341,6 +361,8 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({
 - Loading states provide clear feedback during async operations
 - Component layout remains readable across different screen sizes
 - Brand and category information is easily scannable
+- Brand hover effects provide clear indication of interactivity
+- BrandTaskDialog opens smoothly with appropriate brand and marketplace context
 
 ### **Performance Requirements**
 - Discovery page loads within 2 seconds with 10+ rival cards
@@ -363,6 +385,8 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({
 - Existing SellerSmart UI component library
 - Lucide React icons for visual elements
 - Tailwind CSS for styling consistency
+- BrandTaskDialog component integration
+- Brand logo API endpoint integration
 
 ### **Backend Integration**
 - Enhanced RivalRadar API to include historical performance data
