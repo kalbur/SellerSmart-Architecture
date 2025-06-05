@@ -260,8 +260,7 @@ Start by checking the current status and analyzing what changes can be grouped t
     # Open new terminal window with Claude
     osascript -e "tell application \"Terminal\"
         activate
-        set newWindow to do script \"cd $repo_path && claude --dangerously-skip-permissions \\\"$prompt\\\"\"
-        set custom title of newWindow to \\\"Committing: $repo\\\"
+        do script \"cd $repo_path && claude --dangerously-skip-permissions \\\"$prompt\\\"\"
     end tell"
     
     echo -e "${GREEN}✓ Opened Claude for $repo${NC}"
@@ -317,8 +316,7 @@ Start by checking status and creating an appropriate commit message."
     # Open new terminal window with Claude
     osascript -e "tell application \"Terminal\"
         activate
-        set newWindow to do script \"cd $repo_path && claude --dangerously-skip-permissions \\\"$prompt\\\"\"
-        set custom title of newWindow to \\\"Quick Commit: $repo\\\"
+        do script \"cd $repo_path && claude --dangerously-skip-permissions \\\"$prompt\\\"\"
     end tell"
     
     echo -e "${GREEN}✓ Opened Claude for quick commit in $repo${NC}"
