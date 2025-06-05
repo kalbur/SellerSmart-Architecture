@@ -25,14 +25,18 @@ execute_prd() {
     
     echo -e "${CYAN}Opening Claude for $prd_id...${NC}"
     
-    # Create the prompt for this PRD
-    local prompt="# CLAUDE CODE EXECUTION PHASE
+    # Create a temporary file for the prompt
+    local temp_prompt="/tmp/prd_prompt_${prd_id}.txt"
+    
+    # Write the prompt to the temp file
+    cat > "$temp_prompt" << 'EOF'
+# CLAUDE CODE EXECUTION PHASE
 
 ## CURRENT LOCATION
 You are in: /Users/kal/GitHub/SellerSmart-Architecture
 
 ## EXECUTING PRD
-PRD ID: $prd_id
+PRD ID: PRD_ID_PLACEHOLDER
 
 ## SERVICE REPOSITORIES
 All services are located at: /Users/kal/GitHub/
@@ -45,7 +49,7 @@ All services are located at: /Users/kal/GitHub/
 - SellerSmart-SiteMonitor
 
 ## REQUIREMENTS  
-- Implement according to specific PRD: $prd_id
+- Implement according to specific PRD: PRD_ID_PLACEHOLDER
 - Read CLAUDE.md for project context (in current directory)
 - Check off PRD items as completed
 - NO new features without updating PRD
@@ -54,10 +58,10 @@ All services are located at: /Users/kal/GitHub/
 
 ## SETUP
 1. Find and read PRD file:
-   \`\`\`
-   list_directory(\".prds/processing\")
-   read_file(\".prds/processing/$prd_id.md\")
-   \`\`\`
+   ```
+   list_directory(".prds/processing")
+   read_file(".prds/processing/PRD_ID_PLACEHOLDER.md")
+   ```
 2. Update PRD status: PLANNING_COMPLETE → IN_PROGRESS
 3. Review codebase analysis section for implementation guidance
 4. Identify which service repositories need changes
@@ -69,7 +73,7 @@ All services are located at: /Users/kal/GitHub/
    - Review code examples to follow
 
 2. **Navigate to affected services**
-   - Use \`cd /Users/kal/GitHub/SellerSmart-{service}\` for each service
+   - Use `cd /Users/kal/GitHub/SellerSmart-{service}` for each service
    - Create feature branch if on main/master
 
 3. **Create comprehensive tests first**
@@ -91,16 +95,16 @@ All services are located at: /Users/kal/GitHub/
 Before marking PRD as complete, you MUST run and pass:
 
 ### For JavaScript/TypeScript projects:
-- ESLint: \`npm run lint\` or \`yarn lint\`
-- TypeScript: \`npx tsc --noEmit\` (if TypeScript project)
-- Tests: \`npm test\` or \`yarn test\`
-- Build: \`npm run build\` or \`yarn build\`
+- ESLint: `npm run lint` or `yarn lint`
+- TypeScript: `npx tsc --noEmit` (if TypeScript project)
+- Tests: `npm test` or `yarn test`
+- Build: `npm run build` or `yarn build`
 
 ### For Python projects:
-- Black: \`black .\` (formatting)
-- Flake8: \`flake8\` (linting)
-- MyPy: \`mypy .\` (type checking)
-- Pytest: \`pytest\` (tests)
+- Black: `black .` (formatting)
+- Flake8: `flake8` (linting)
+- MyPy: `mypy .` (type checking)
+- Pytest: `pytest` (tests)
 
 ### General checks:
 - No console.log statements in production code
@@ -136,9 +140,9 @@ If ANY of these checks fail:
 ## FINAL STEPS
 1. Run all quality checks one final time
 2. Update PRD status to COMPLETED
-3. Move PRD: \`move_file(\".prds/processing/$prd_id.md\", \".prds/completed/${prd_id}_COMPLETED.md\")\`
+3. Move PRD: `move_file(".prds/processing/PRD_ID_PLACEHOLDER.md", ".prds/completed/PRD_ID_PLACEHOLDER_COMPLETED.md")`
 4. Add all changes to git in each affected repository
-5. Print \"IMPLEMENTATION COMPLETE - PRD ID: $prd_id - ALL ITEMS FINISHED\"
+5. Print "IMPLEMENTATION COMPLETE - PRD ID: PRD_ID_PLACEHOLDER - ALL ITEMS FINISHED"
 6. Generate detailed PR description for each affected repository
 
 ## IMPORTANT REMINDERS
@@ -146,12 +150,16 @@ If ANY of these checks fail:
 - Navigate to service directories as needed
 - Follow the patterns and examples in the PRD
 - Complete ALL items - no partial implementations
-- NEVER mark PRD complete until all tests/linting pass"
+- NEVER mark PRD complete until all tests/linting pass
+EOF
     
-    # Open new terminal window with Claude for this PRD
+    # Replace the placeholder with actual PRD ID
+    sed -i '' "s/PRD_ID_PLACEHOLDER/$prd_id/g" "$temp_prompt"
+    
+    # Open new terminal window with Claude using the temp file
     osascript -e "tell application \"Terminal\"
         activate
-        do script \"cd /Users/kal/GitHub/SellerSmart-Architecture && claude --dangerously-skip-permissions \\\"$prompt\\\"\"
+        do script \"cd /Users/kal/GitHub/SellerSmart-Architecture && claude --dangerously-skip-permissions < $temp_prompt && rm $temp_prompt\"
     end tell"
     
     echo -e "${GREEN}✓ Opened Claude for $prd_id${NC}"
