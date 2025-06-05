@@ -160,10 +160,73 @@ commit_repo_with_claude() {
     
     echo -e "\n${CYAN}Opening Claude for $repo...${NC}"
     
-    # Add CI monitoring instructions if requested
-    local ci_instructions=""
+    # Create a temporary file for the prompt
+    local temp_prompt="/tmp/claude_commit_${repo//[^a-zA-Z0-9]/_}.txt"
+    
+    # Write the base prompt to the temp file
+    cat > "$temp_prompt" << 'EOF'
+# COMMIT AND PUSH CHANGES FOR REPO_PLACEHOLDER
+
+## CURRENT LOCATION
+You are in: REPO_PATH_PLACEHOLDER
+
+## IMPORTANT: ATOMIC COMMITS STRATEGY
+Instead of committing all changes at once, create separate commits for different concerns:
+1. Group related changes together
+2. Each commit should have a single, clear purpose
+3. Use descriptive commit messages that explain WHAT and WHY
+
+## WORKFLOW FOR ATOMIC COMMITS
+1. First, check all changes: git status -s
+2. Review changes in detail: git diff
+3. Identify logical groups of changes (e.g., bug fixes, new features, refactoring, tests)
+4. For each logical group:
+   - Stage only related files: git add <specific files>
+   - Create descriptive commit: git commit -m "type: description"
+   - Repeat for next group
+
+## COMMIT MESSAGE FORMAT
+Use conventional commits format:
+- feat: new feature
+- fix: bug fix
+- docs: documentation changes
+- style: formatting, missing semicolons, etc
+- refactor: code restructuring
+- test: adding tests
+- chore: maintenance tasks
+
+Example of splitting commits:
+- git add src/components/UserProfile.tsx src/components/UserProfile.test.tsx
+- git commit -m "feat: add user profile component with avatar support"
+- git add src/api/auth.ts src/types/auth.ts
+- git commit -m "fix: resolve authentication token refresh issue"
+- git add README.md docs/API.md
+- git commit -m "docs: update API documentation with new endpoints"
+
+## REQUIREMENTS
+1. NEVER use --no-verify or bypass pre-commit hooks
+2. If pre-commit hooks fail:
+   - Fix ALL issues that caused the failure
+   - Do not proceed until all checks pass
+   - Re-stage fixed files and commit again
+3. After all commits, push to remote
+4. If push fails due to no upstream: git push --set-upstream origin $(git branch --show-current)
+
+## STEP-BY-STEP PROCESS
+1. cd REPO_PATH_PLACEHOLDER
+2. git status -s (see all changes)
+3. git diff (review changes in detail)
+4. Identify logical groups of changes
+5. For each group:
+   - git add <specific related files>
+   - git commit -m "type: descriptive message"
+   - If hooks fail, fix issues and retry
+6. After all commits: git push
+EOF
+
+    # Add CI monitoring section if enabled
     if [[ "$wait_for_ci" == "true" ]]; then
-        ci_instructions="
+        cat >> "$temp_prompt" << 'EOF'
 
 ## CI/CD MONITORING (ENABLED)
 After pushing all commits:
@@ -185,82 +248,31 @@ After pushing all commits:
    - GitLab: Check Pipelines or use 'glab pipeline list'
    - Or wait for status checks on the PR
 
-IMPORTANT: Do not close this terminal until CI passes!"
+IMPORTANT: Do not close this terminal until CI passes!
+EOF
     fi
-    
-    # Create Claude prompt for this specific repo
-    local prompt="# COMMIT AND PUSH CHANGES FOR $repo
 
-## CURRENT LOCATION
-You are in: $repo_path
-
-## IMPORTANT: ATOMIC COMMITS STRATEGY
-Instead of committing all changes at once, create separate commits for different concerns:
-1. Group related changes together
-2. Each commit should have a single, clear purpose
-3. Use descriptive commit messages that explain WHAT and WHY
-
-## WORKFLOW FOR ATOMIC COMMITS
-1. First, check all changes: git status -s
-2. Review changes in detail: git diff
-3. Identify logical groups of changes (e.g., bug fixes, new features, refactoring, tests)
-4. For each logical group:
-   - Stage only related files: git add <specific files>
-   - Create descriptive commit: git commit -m \"type: description\"
-   - Repeat for next group
-
-## COMMIT MESSAGE FORMAT
-Use conventional commits format:
-- feat: new feature
-- fix: bug fix
-- docs: documentation changes
-- style: formatting, missing semicolons, etc
-- refactor: code restructuring
-- test: adding tests
-- chore: maintenance tasks
-
-Example of splitting commits:
-- git add src/components/UserProfile.tsx src/components/UserProfile.test.tsx
-- git commit -m \"feat: add user profile component with avatar support\"
-- git add src/api/auth.ts src/types/auth.ts
-- git commit -m \"fix: resolve authentication token refresh issue\"
-- git add README.md docs/API.md
-- git commit -m \"docs: update API documentation with new endpoints\"
-
-## REQUIREMENTS
-1. NEVER use --no-verify or bypass pre-commit hooks
-2. If pre-commit hooks fail:
-   - Fix ALL issues that caused the failure
-   - Do not proceed until all checks pass
-   - Re-stage fixed files and commit again
-3. After all commits, push to remote
-4. If push fails due to no upstream: git push --set-upstream origin \$(git branch --show-current)
-
-## STEP-BY-STEP PROCESS
-1. cd $repo_path
-2. git status -s (see all changes)
-3. git diff (review changes in detail)
-4. Identify logical groups of changes
-5. For each group:
-   - git add <specific related files>
-   - git commit -m \"type: descriptive message\"
-   - If hooks fail, fix issues and retry
-6. After all commits: git push
-$ci_instructions
+    # Add final reminders
+    cat >> "$temp_prompt" << 'EOF'
 
 ## IMPORTANT REMINDERS
 - One commit per concern (don't mix features with fixes)
-- Descriptive messages (not \"fix stuff\" or \"updates\")
+- Descriptive messages (not "fix stuff" or "updates")
 - Include context in commit messages
 - Fix all linting/type/test errors before committing
 - Each commit should pass all quality checks
 
-Start by checking the current status and analyzing what changes can be grouped together."
+Start by checking the current status and analyzing what changes can be grouped together.
+EOF
+
+    # Replace placeholders
+    sed -i '' "s|REPO_PLACEHOLDER|$repo|g" "$temp_prompt"
+    sed -i '' "s|REPO_PATH_PLACEHOLDER|$repo_path|g" "$temp_prompt"
     
-    # Open new terminal window with Claude
+    # Open new terminal window with Claude using the temp file
     osascript -e "tell application \"Terminal\"
         activate
-        do script \"cd $repo_path && claude --dangerously-skip-permissions \\\"$prompt\\\"\"
+        do script \"cd $repo_path && claude --dangerously-skip-permissions < $temp_prompt && rm $temp_prompt\"
     end tell"
     
     echo -e "${GREEN}✓ Opened Claude for $repo${NC}"
@@ -274,49 +286,63 @@ quick_commit_with_claude() {
     
     echo -e "\n${CYAN}Opening Claude for quick commit in $repo...${NC}"
     
-    # Add CI monitoring instructions if requested
-    local ci_instructions=""
-    if [[ "$wait_for_ci" == "true" ]]; then
-        ci_instructions="
-        
-## CI/CD MONITORING (ENABLED)
-After pushing:
-1. Monitor CI status
-2. Fix any failures and push fixes
-3. Repeat until CI passes"
-    fi
+    # Create a temporary file for the prompt
+    local temp_prompt="/tmp/claude_quick_${repo//[^a-zA-Z0-9]/_}.txt"
     
-    local prompt="# QUICK COMMIT ALL CHANGES FOR $repo
+    # Write the prompt to the temp file
+    cat > "$temp_prompt" << 'EOF'
+# QUICK COMMIT ALL CHANGES FOR REPO_PLACEHOLDER
 
 ## CURRENT LOCATION
-You are in: $repo_path
+You are in: REPO_PATH_PLACEHOLDER
 
 ## QUICK COMMIT MODE
 This is for when all changes are related and can be committed together.
 
 ## WORKFLOW
-1. cd $repo_path
+1. cd REPO_PATH_PLACEHOLDER
 2. git status
 3. Review all changes
 4. git add -A
 5. Create ONE descriptive commit message that summarizes all changes
-6. git commit -m \"type: comprehensive description of all changes\"
+6. git commit -m "type: comprehensive description of all changes"
 7. If pre-commit hooks fail:
    - Fix ALL issues
    - Commit again
-8. git push$ci_instructions
+8. git push
+EOF
+
+    # Add CI monitoring if enabled
+    if [[ "$wait_for_ci" == "true" ]]; then
+        cat >> "$temp_prompt" << 'EOF'
+
+## CI/CD MONITORING (ENABLED)
+After pushing:
+1. Monitor CI status
+2. Fix any failures and push fixes
+3. Repeat until CI passes
+EOF
+    fi
+
+    # Add final section
+    cat >> "$temp_prompt" << 'EOF'
 
 ## IMPORTANT
 - Still create a good commit message
 - NEVER use --no-verify
 - Fix all hook failures before proceeding
 
-Start by checking status and creating an appropriate commit message."
+Start by checking status and creating an appropriate commit message.
+EOF
+
+    # Replace placeholders
+    sed -i '' "s|REPO_PLACEHOLDER|$repo|g" "$temp_prompt"
+    sed -i '' "s|REPO_PATH_PLACEHOLDER|$repo_path|g" "$temp_prompt"
     
-    # Open new terminal window with Claude
+    # Open new terminal window with Claude using the temp file
     osascript -e "tell application \"Terminal\"
         activate
-        do script \"cd $repo_path && claude --dangerously-skip-permissions \\\"$prompt\\\"\"
+        do script \"cd $repo_path && claude --dangerously-skip-permissions < $temp_prompt && rm $temp_prompt\"
     end tell"
     
     echo -e "${GREEN}✓ Opened Claude for quick commit in $repo${NC}"
@@ -386,7 +412,7 @@ if [[ ${#REPOS_WITH_CHANGES[@]} -gt 0 ]]; then
             echo -e "\n${YELLOW}Would you like Claude to monitor CI/CD after pushing? (y/n):${NC}"
             read -r ci_monitor
             
-            local wait_for_ci="false"
+            wait_for_ci="false"
             if [[ "$ci_monitor" == "y" ]]; then
                 wait_for_ci="true"
                 echo -e "${GREEN}✓ CI monitoring enabled - Claude will wait for CI to pass${NC}"
@@ -429,7 +455,7 @@ if [[ ${#REPOS_WITH_CHANGES[@]} -gt 0 ]]; then
             echo -e "\n${YELLOW}Would you like Claude to monitor CI/CD after pushing? (y/n):${NC}"
             read -r ci_monitor
             
-            local wait_for_ci="false"
+            wait_for_ci="false"
             if [[ "$ci_monitor" == "y" ]]; then
                 wait_for_ci="true"
                 echo -e "${GREEN}✓ CI monitoring enabled${NC}"
