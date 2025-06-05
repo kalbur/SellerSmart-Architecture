@@ -198,13 +198,13 @@ EOF
     # Open new Warp window to run the wrapper script
     osascript << EOF
 tell application "Warp" to activate
-delay 0.5
+delay 1
 tell application "System Events"
     tell process "Warp"
         keystroke "n" using {command down}
-        delay 0.5
+        delay 1
         keystroke "$wrapper_script"
-        keystroke return
+        key code 36
     end tell
 end tell
 EOF
@@ -259,13 +259,13 @@ EOF
     # Open new Warp window to run the wrapper script
     osascript << EOF
 tell application "Warp" to activate
-delay 0.5
+delay 1
 tell application "System Events"
     tell process "Warp"
         keystroke "n" using {command down}
-        delay 0.5
+        delay 1
         keystroke "$wrapper_script"
-        keystroke return
+        key code 36
     end tell
 end tell
 EOF

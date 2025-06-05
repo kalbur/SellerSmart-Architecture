@@ -8,13 +8,13 @@ if [ -n "$1" ]; then
     PRD_ID="$1"
     osascript << EOF
 tell application "Warp" to activate
-delay 0.5
+delay 1
 tell application "System Events"
     tell process "Warp"
         keystroke "n" using {command down}
-        delay 0.5
+        delay 1
         keystroke "cd /Users/kal/GitHub/SellerSmart-Architecture && ./scripts/execute-prd.sh $PRD_ID"
-        keystroke return
+        key code 36
     end tell
 end tell
 EOF
@@ -22,13 +22,13 @@ else
     # No PRD_ID provided, execute all PRDs
     osascript << 'EOF'
 tell application "Warp" to activate
-delay 0.5
+delay 1
 tell application "System Events"
     tell process "Warp"
         keystroke "n" using {command down}
-        delay 0.5
+        delay 1
         keystroke "cd /Users/kal/GitHub/SellerSmart-Architecture && ./scripts/execute-prd.sh"
-        keystroke return
+        key code 36
     end tell
 end tell
 EOF
