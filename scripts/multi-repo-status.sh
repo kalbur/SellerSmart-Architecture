@@ -165,41 +165,67 @@ commit_repo_with_claude() {
 ## CURRENT LOCATION
 You are in: $repo_path
 
+## IMPORTANT: ATOMIC COMMITS STRATEGY
+Instead of committing all changes at once, create separate commits for different concerns:
+1. Group related changes together
+2. Each commit should have a single, clear purpose
+3. Use descriptive commit messages that explain WHAT and WHY
+
+## WORKFLOW FOR ATOMIC COMMITS
+1. First, check all changes: git status -s
+2. Review changes in detail: git diff
+3. Identify logical groups of changes (e.g., bug fixes, new features, refactoring, tests)
+4. For each logical group:
+   - Stage only related files: git add <specific files>
+   - Create descriptive commit: git commit -m \"type: description\"
+   - Repeat for next group
+
+## COMMIT MESSAGE FORMAT
+Use conventional commits format:
+- feat: new feature
+- fix: bug fix
+- docs: documentation changes
+- style: formatting, missing semicolons, etc
+- refactor: code restructuring
+- test: adding tests
+- chore: maintenance tasks
+
+Example of splitting commits:
+- git add src/components/UserProfile.tsx src/components/UserProfile.test.tsx
+- git commit -m \"feat: add user profile component with avatar support\"
+- git add src/api/auth.ts src/types/auth.ts
+- git commit -m \"fix: resolve authentication token refresh issue\"
+- git add README.md docs/API.md
+- git commit -m \"docs: update API documentation with new endpoints\"
+
 ## REQUIREMENTS
-1. First, check current status with: git status
-2. Review all changes carefully
-3. Add all changes with: git add -A
-4. Create a descriptive commit message based on the changes
-5. IMPORTANT: NEVER use --no-verify or bypass pre-commit hooks
-6. If pre-commit hooks fail (ESLint, Prettier, TypeScript, tests):
+1. NEVER use --no-verify or bypass pre-commit hooks
+2. If pre-commit hooks fail:
    - Fix ALL issues that caused the failure
    - Do not proceed until all checks pass
-   - Run the commit again after fixing
-7. After successful commit, push to remote
-8. If push fails due to no upstream, use: git push --set-upstream origin \$(git branch --show-current)
+   - Re-stage fixed files and commit again
+3. After all commits, push to remote
+4. If push fails due to no upstream: git push --set-upstream origin \$(git branch --show-current)
 
-## WORKFLOW
+## STEP-BY-STEP PROCESS
 1. cd $repo_path
-2. git status
-3. Review changes and create appropriate commit message
-4. git add -A
-5. git commit -m \"your descriptive message\"
-6. If commit fails due to hooks:
-   - Read the error output carefully
-   - Fix all issues (linting, formatting, types, tests)
-   - Try commit again
-   - REPEAT until all checks pass
-7. git push (or git push --set-upstream origin branch-name if needed)
+2. git status -s (see all changes)
+3. git diff (review changes in detail)
+4. Identify logical groups of changes
+5. For each group:
+   - git add <specific related files>
+   - git commit -m \"type: descriptive message\"
+   - If hooks fail, fix issues and retry
+6. After all commits: git push
 
 ## IMPORTANT REMINDERS
-- NEVER bypass pre-commit hooks with --no-verify
-- Fix all linting errors
-- Fix all TypeScript errors
-- Fix all test failures
-- Ensure code formatting is correct
-- The commit should only succeed when ALL quality checks pass
+- One commit per concern (don't mix features with fixes)
+- Descriptive messages (not \"fix stuff\" or \"updates\")
+- Include context in commit messages
+- Fix all linting/type/test errors before committing
+- Each commit should pass all quality checks
 
-Start by checking the current status of the repository."
+Start by checking the current status and analyzing what changes can be grouped together."
     
     # Open new terminal window with Claude
     osascript -e "tell application \"Terminal\"
@@ -254,12 +280,17 @@ if [[ ${#REPOS_WITH_CHANGES[@]} -gt 0 ]]; then
             echo -e "${PURPLE}║              CLAUDE AUTOMATED COMMIT MODE                     ║${NC}"
             echo -e "${PURPLE}╚═══════════════════════════════════════════════════════════════╝${NC}"
             echo -e "\n${CYAN}Claude will:${NC}"
-            echo -e "  • Review all changes in each repository"
-            echo -e "  • Create appropriate commit messages"
+            echo -e "  • Review all changes and group them by concern"
+            echo -e "  • Create multiple atomic commits (one per feature/fix)"
+            echo -e "  • Write descriptive commit messages for each change"
             echo -e "  • Fix any linting, formatting, or type errors"
             echo -e "  • Ensure all pre-commit hooks pass"
             echo -e "  • Never bypass quality checks"
             echo -e "  • Push changes after successful commits"
+            echo -e "\n${YELLOW}Benefits:${NC}"
+            echo -e "  • Clean git history with meaningful commits"
+            echo -e "  • Easy to review and revert specific changes"
+            echo -e "  • Better collaboration and code understanding"
             
             echo -e "\n${YELLOW}Process specific repos or all? (all/select):${NC}"
             read -r process_choice
