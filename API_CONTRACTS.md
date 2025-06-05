@@ -1,21 +1,7 @@
 # SellerSmart API Contracts
 
 ## Overview
-This document defines the API contracts between SellerSmart services.
-
-## Service Communication
-
-### API Gateway → Microservices
-All microservice calls from the API gateway include:
-- Authentication headers
-- Request ID for tracking
-- User context
-
-### Inter-Service Communication
-Services communicate using:
-- REST APIs
-- Standardized error formats
-- Consistent response structures
+API contracts between SellerSmart services.
 
 ## Common Headers
 ```

@@ -17,7 +17,8 @@ SellerSmart-Architecture/
 │   ├── completed/        # Finished PRDs
 │   └── templates/        # PRD templates
 ├── scripts/              # Utility scripts
-│   └── create-prd.sh    # PRD creation script
+│   ├── create-prd.sh    # PRD creation script
+│   └── execute-prd.sh   # PRD implementation script
 ├── diagrams/             # Architecture diagrams
 └── service-docs/         # Individual service documentation
     ├── API.md
@@ -46,10 +47,31 @@ The SellerSmart platform consists of the following services:
 ## Getting Started
 
 1. **Creating a PRD**: Run `./scripts/create-prd.sh` from this directory
-2. **Understanding the Architecture**: Read `ARCHITECTURE.md`
-3. **Coding Standards**: Review `CONVENTIONS.md` before contributing
-4. **Database Schema**: Check `DATABASE_SCHEMA.md` for MongoDB collections
-5. **API Documentation**: See `API_CONTRACTS.md` for service interfaces
+2. **Implementing a PRD**: Run `./scripts/execute-prd.sh PRD_ID` from this directory
+3. **Understanding the Architecture**: Read `ARCHITECTURE.md`
+4. **Coding Standards**: Review `CONVENTIONS.md` before contributing
+5. **Database Schema**: Check `DATABASE_SCHEMA.md` for MongoDB collections
+6. **API Documentation**: See `API_CONTRACTS.md` for service interfaces
+
+## PRD Workflow
+
+### Creating a PRD
+```bash
+cd /Users/kal/GitHub/SellerSmart-Architecture
+./scripts/create-prd.sh
+```
+
+### Implementing a PRD
+```bash
+cd /Users/kal/GitHub/SellerSmart-Architecture
+./scripts/execute-prd.sh PRD_20240315_1430_feature_name
+```
+
+The execution script will:
+- Read the PRD from `.prds/processing/`
+- Guide implementation across all affected services
+- Update the PRD checklist as items are completed
+- Move the PRD to `.prds/completed/` when done
 
 ## Quick Links
 
