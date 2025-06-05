@@ -156,8 +156,37 @@ show_repo_details() {
 commit_repo_with_claude() {
     local repo=$1
     local repo_path="$BASE_DIR/$repo"
+    local wait_for_ci=$2
     
     echo -e "\n${CYAN}Opening Claude for $repo...${NC}"
+    
+    # Add CI monitoring instructions if requested
+    local ci_instructions=""
+    if [[ "$wait_for_ci" == "true" ]]; then
+        ci_instructions="
+
+## CI/CD MONITORING (ENABLED)
+After pushing all commits:
+1. Monitor the CI/CD pipeline status
+2. If CI fails:
+   - Analyze the error logs
+   - Fix the issues locally
+   - Create a new commit with the fixes
+   - Push again
+   - Repeat until CI passes
+3. Common CI failures to watch for:
+   - Build errors
+   - Test failures
+   - Coverage drops
+   - Linting issues in files you didn't edit
+   - Integration test failures
+4. Use these commands to check CI status:
+   - GitHub: Check Actions tab or use 'gh run list'
+   - GitLab: Check Pipelines or use 'glab pipeline list'
+   - Or wait for status checks on the PR
+
+IMPORTANT: Do not close this terminal until CI passes!"
+    fi
     
     # Create Claude prompt for this specific repo
     local prompt="# COMMIT AND PUSH CHANGES FOR $repo
@@ -217,6 +246,7 @@ Example of splitting commits:
    - git commit -m \"type: descriptive message\"
    - If hooks fail, fix issues and retry
 6. After all commits: git push
+$ci_instructions
 
 ## IMPORTANT REMINDERS
 - One commit per concern (don't mix features with fixes)
@@ -236,13 +266,71 @@ Start by checking the current status and analyzing what changes can be grouped t
     
     echo -e "${GREEN}✓ Opened Claude for $repo${NC}"
 }
+
+# Function for quick commit-all using Claude
+quick_commit_with_claude() {
+    local repo=$1
+    local repo_path="$BASE_DIR/$repo"
+    local wait_for_ci=$2
+    
+    echo -e "\n${CYAN}Opening Claude for quick commit in $repo...${NC}"
+    
+    # Add CI monitoring instructions if requested
+    local ci_instructions=""
+    if [[ "$wait_for_ci" == "true" ]]; then
+        ci_instructions="
+        
+## CI/CD MONITORING (ENABLED)
+After pushing:
+1. Monitor CI status
+2. Fix any failures and push fixes
+3. Repeat until CI passes"
+    fi
+    
+    local prompt="# QUICK COMMIT ALL CHANGES FOR $repo
+
+## CURRENT LOCATION
+You are in: $repo_path
+
+## QUICK COMMIT MODE
+This is for when all changes are related and can be committed together.
+
+## WORKFLOW
+1. cd $repo_path
+2. git status
+3. Review all changes
+4. git add -A
+5. Create ONE descriptive commit message that summarizes all changes
+6. git commit -m \"type: comprehensive description of all changes\"
+7. If pre-commit hooks fail:
+   - Fix ALL issues
+   - Commit again
+8. git push$ci_instructions
+
+## IMPORTANT
+- Still create a good commit message
+- NEVER use --no-verify
+- Fix all hook failures before proceeding
+
+Start by checking status and creating an appropriate commit message."
+    
+    # Open new terminal window with Claude
+    osascript -e "tell application \"Terminal\"
+        activate
+        set newWindow to do script \"cd $repo_path && claude --dangerously-skip-permissions \\\"$prompt\\\"\"
+        set custom title of newWindow to \\\"Quick Commit: $repo\\\"
+    end tell"
+    
+    echo -e "${GREEN}✓ Opened Claude for quick commit in $repo${NC}"
+}
 # Function to commit all repos with changes using Claude
 commit_all_repos_with_claude() {
+    local wait_for_ci=$1
     echo -e "\n${CYAN}Opening Claude terminals for all repositories with changes...${NC}"
     
     for repo_info in "${REPOS_WITH_CHANGES[@]}"; do
         IFS='|' read -r repo _ _ <<< "$repo_info"
-        commit_repo_with_claude "$repo"
+        commit_repo_with_claude "$repo" "$wait_for_ci"
         # Small delay to prevent terminal window overlap
         sleep 0.5
     done
@@ -250,6 +338,10 @@ commit_all_repos_with_claude() {
     echo -e "\n${GREEN}✓ Opened Claude for all repositories with changes${NC}"
     echo -e "${YELLOW}Claude will handle commits and ensure all quality checks pass.${NC}"
     echo -e "${YELLOW}Each repository is in its own terminal window.${NC}"
+    
+    if [[ "$wait_for_ci" == "true" ]]; then
+        echo -e "${PURPLE}CI monitoring is ENABLED - Claude will wait for CI to pass${NC}"
+    fi
 }
 
 # Main execution
@@ -263,9 +355,10 @@ display_status
 if [[ ${#REPOS_WITH_CHANGES[@]} -gt 0 ]]; then
     echo -e "\n${YELLOW}Would you like to:${NC}"
     echo -e "  ${CYAN}1)${NC} View detailed changes for each repository"
-    echo -e "  ${CYAN}2)${NC} Use Claude to commit and push (handles all errors automatically)"
-    echo -e "  ${CYAN}3)${NC} Exit"
-    echo -ne "\n${YELLOW}Select option (1-3):${NC} "
+    echo -e "  ${CYAN}2)${NC} Use Claude for atomic commits (best practice)"
+    echo -e "  ${CYAN}3)${NC} Use Claude for quick commit-all (one commit per repo)"
+    echo -e "  ${CYAN}4)${NC} Exit"
+    echo -ne "\n${YELLOW}Select option (1-4):${NC} "
     read -r option
     
     case $option in
@@ -292,11 +385,21 @@ if [[ ${#REPOS_WITH_CHANGES[@]} -gt 0 ]]; then
             echo -e "  • Easy to review and revert specific changes"
             echo -e "  • Better collaboration and code understanding"
             
+            echo -e "\n${YELLOW}Would you like Claude to monitor CI/CD after pushing? (y/n):${NC}"
+            read -r ci_monitor
+            
+            local wait_for_ci="false"
+            if [[ "$ci_monitor" == "y" ]]; then
+                wait_for_ci="true"
+                echo -e "${GREEN}✓ CI monitoring enabled - Claude will wait for CI to pass${NC}"
+                echo -e "${YELLOW}Claude will fix any CI failures and push fixes${NC}"
+            fi
+            
             echo -e "\n${YELLOW}Process specific repos or all? (all/select):${NC}"
             read -r process_choice
             
             if [[ "$process_choice" == "all" ]]; then
-                commit_all_repos_with_claude
+                commit_all_repos_with_claude "$wait_for_ci"
             else
                 echo -e "\n${YELLOW}Select repositories to process:${NC}"
                 for i in "${!REPOS_WITH_CHANGES[@]}"; do
@@ -309,13 +412,43 @@ if [[ ${#REPOS_WITH_CHANGES[@]} -gt 0 ]]; then
                 for selection in "${selections[@]}"; do
                     if [[ $selection -gt 0 ]] && [[ $selection -le ${#REPOS_WITH_CHANGES[@]} ]]; then
                         IFS='|' read -r repo _ _ <<< "${REPOS_WITH_CHANGES[$((selection-1))]}"
-                        commit_repo_with_claude "$repo"
+                        commit_repo_with_claude "$repo" "$wait_for_ci"
                         sleep 0.5
                     fi
                 done
             fi
             ;;
         3)
+            echo -e "\n${PURPLE}╔═══════════════════════════════════════════════════════════════╗${NC}"
+            echo -e "${PURPLE}║              CLAUDE QUICK COMMIT MODE                         ║${NC}"
+            echo -e "${PURPLE}╚═══════════════════════════════════════════════════════════════╝${NC}"
+            echo -e "\n${CYAN}Quick mode will:${NC}"
+            echo -e "  • Commit ALL changes in ONE commit per repo"
+            echo -e "  • Still fix any pre-commit hook failures"
+            echo -e "  • Create descriptive commit messages"
+            echo -e "  • Best for related changes or hotfixes"
+            
+            echo -e "\n${YELLOW}Would you like Claude to monitor CI/CD after pushing? (y/n):${NC}"
+            read -r ci_monitor
+            
+            local wait_for_ci="false"
+            if [[ "$ci_monitor" == "y" ]]; then
+                wait_for_ci="true"
+                echo -e "${GREEN}✓ CI monitoring enabled${NC}"
+            fi
+            
+            echo -e "\n${YELLOW}Quick commit all repos with changes? (y/n):${NC}"
+            read -r confirm_quick
+            
+            if [[ "$confirm_quick" == "y" ]]; then
+                for repo_info in "${REPOS_WITH_CHANGES[@]}"; do
+                    IFS='|' read -r repo _ _ <<< "$repo_info"
+                    quick_commit_with_claude "$repo" "$wait_for_ci"
+                    sleep 0.5
+                done
+            fi
+            ;;
+        4)
             echo -e "${GREEN}Exiting...${NC}"
             exit 0
             ;;
