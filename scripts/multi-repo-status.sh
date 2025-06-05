@@ -180,10 +180,14 @@ Instead of committing all changes at once, create separate commits for different
 1. First, check all changes: git status -s
 2. Review changes in detail: git diff
 3. Identify logical groups of changes (e.g., bug fixes, new features, refactoring, tests)
-4. For each logical group:
-   - Stage only related files: git add <specific files>
-   - Create descriptive commit: git commit -m "type: description"
-   - Repeat for next group
+4. LOOP: While there are still uncommitted changes:
+   a. Identify next logical group of related changes
+   b. Stage only those files: git add <specific files>
+   c. Create descriptive commit: git commit -m "type: description"
+   d. If hooks fail, fix and retry that commit
+   e. Run git status to check remaining changes
+   f. REPEAT until git status shows clean working tree
+5. Only after ALL changes committed: git push
 
 ## COMMIT MESSAGE FORMAT
 Use conventional commits format:
@@ -221,7 +225,16 @@ Example of splitting commits:
    - git add <specific related files>
    - git commit -m "type: descriptive message"
    - If hooks fail, fix issues and retry
-6. After all commits: git push
+6. IMPORTANT: After EACH commit, run git status again
+7. CONTINUE creating commits until git status shows NO changes
+8. Only after ALL changes are committed: git push
+
+## CRITICAL: COMMIT ALL CHANGES
+- Do NOT stop after one commit
+- Keep checking git status after each commit
+- Continue until working directory is completely clean
+- Common mistake: stopping after first commit when more changes remain
+- VERIFY: git status should show "nothing to commit, working tree clean"
 EOF
 
     # Add CI monitoring section if enabled
@@ -261,8 +274,12 @@ EOF
 - Include context in commit messages
 - Fix all linting/type/test errors before committing
 - Each commit should pass all quality checks
+- CRITICAL: Continue making commits until ALL changes are committed
+- Do not leave any uncommitted changes - check git status repeatedly
+- Only push after working tree is completely clean
 
 Start by checking the current status and analyzing what changes can be grouped together.
+Then continue committing until there are NO remaining changes.
 EOF
 
     # Replace placeholders
