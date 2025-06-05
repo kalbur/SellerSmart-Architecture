@@ -25,147 +25,61 @@ execute_prd() {
     
     echo -e "${CYAN}Opening Claude for $prd_id...${NC}"
     
-    # Create a temporary file for the prompt
-    local temp_prompt="/tmp/prd_prompt_${prd_id}.txt"
+    # Create a wrapper script that Claude will execute
+    local wrapper_script="/tmp/claude_prd_${prd_id//[^a-zA-Z0-9]/_}.sh"
     
-    # Write the prompt to the temp file
-    cat > "$temp_prompt" << 'EOF'
-# CLAUDE CODE EXECUTION PHASE
+    # Write the wrapper script
+    cat > "$wrapper_script" << EOF
+#!/bin/bash
+cd /Users/kal/GitHub/SellerSmart-Architecture
 
-## CURRENT LOCATION
-You are in: /Users/kal/GitHub/SellerSmart-Architecture
+# Execute PRD with Claude
+claude --dangerously-skip-permissions "You are in: /Users/kal/GitHub/SellerSmart-Architecture
 
-## EXECUTING PRD
-PRD ID: PRD_ID_PLACEHOLDER
+## EXECUTING PRD: $prd_id
+
+## TASK: Implement this PRD completely
+
+1. Read the PRD: read_file('.prds/processing/$prd_id.md')
+2. Update status to IN_PROGRESS
+3. Navigate to affected service repositories
+4. Create feature branches as needed
+5. Implement all checklist items
+6. Run all quality checks (lint, tests, build)
+7. Mark items complete as you go: - [ ] → - [x]
+8. Move PRD to completed when ALL items are done
 
 ## SERVICE REPOSITORIES
-All services are located at: /Users/kal/GitHub/
-- SellerSmart-API
-- SellerSmart-Web
-- SellerSmart-Backend.BrandScan
-- SellerSmart-Backend.InvOrders
-- SellerSmart-Backend.RivalRadar
-- SellerSmart-Backend.WholesaleScan
-- SellerSmart-SiteMonitor
+- /Users/kal/GitHub/SellerSmart-API
+- /Users/kal/GitHub/SellerSmart-Web
+- /Users/kal/GitHub/SellerSmart-Backend.BrandScan
+- /Users/kal/GitHub/SellerSmart-Backend.InvOrders
+- /Users/kal/GitHub/SellerSmart-Backend.RivalRadar
+- /Users/kal/GitHub/SellerSmart-Backend.WholesaleScan
+- /Users/kal/GitHub/SellerSmart-SiteMonitor
 
-## REQUIREMENTS  
-- Implement according to specific PRD: PRD_ID_PLACEHOLDER
-- Read CLAUDE.md for project context (in current directory)
-- Check off PRD items as completed
-- NO new features without updating PRD
-- Follow codebase analysis and examples from PRD
-- ENSURE COMPLETE IMPLEMENTATION - nothing left unfinished
+## QUALITY CHECKS REQUIRED
+- ESLint/Flake8 must pass
+- TypeScript/MyPy must pass
+- All tests must pass
+- Build must succeed
 
-## SETUP
-1. Find and read PRD file:
-   ```
-   list_directory(".prds/processing")
-   read_file(".prds/processing/PRD_ID_PLACEHOLDER.md")
-   ```
-2. Update PRD status: PLANNING_COMPLETE → IN_PROGRESS
-3. Review codebase analysis section for implementation guidance
-4. Identify which service repositories need changes
-
-## IMPLEMENTATION WORKFLOW
-1. **Review PRD thoroughly**
-   - Read codebase analysis section
-   - Note which services are affected
-   - Review code examples to follow
-
-2. **Navigate to affected services**
-   - Use `cd /Users/kal/GitHub/SellerSmart-{service}` for each service
-   - Create feature branch if on main/master
-
-3. **Create comprehensive tests first**
-   - Follow test patterns identified in PRD
-   - Write tests before implementation
-
-4. **Implement following PRD checklist**
-   - Use code examples and patterns from PRD
-   - Maintain consistency with existing code
-   - Mark items complete: - [ ] → - [x]
-
-5. **Verify implementation**
-   - ALL checklist items must be marked [x]
-   - No TODO, FIXME, or incomplete code
-   - All tests pass
-   - Verify against success criteria
-
-## QUALITY ASSURANCE BEFORE COMPLETION
-Before marking PRD as complete, you MUST run and pass:
-
-### For JavaScript/TypeScript projects:
-- ESLint: `npm run lint` or `yarn lint`
-- TypeScript: `npx tsc --noEmit` (if TypeScript project)
-- Tests: `npm test` or `yarn test`
-- Build: `npm run build` or `yarn build`
-
-### For Python projects:
-- Black: `black .` (formatting)
-- Flake8: `flake8` (linting)
-- MyPy: `mypy .` (type checking)
-- Pytest: `pytest` (tests)
-
-### General checks:
-- No console.log statements in production code
-- No commented out code
-- All imports are used
-- No hardcoded values that should be config
-- API keys/secrets are in environment variables
-
-If ANY of these checks fail:
-1. Fix all issues
-2. Re-run the checks
-3. Only proceed when ALL checks pass
-
-## CROSS-SERVICE CONSIDERATIONS
-- If PRD affects multiple services, implement in order:
-  1. Backend services first (API, microservices)
-  2. Frontend (Web) last
-- Ensure API contracts match between services
-- Update documentation in each service
-
-## COMPLETION CHECKLIST
-- [ ] All PRD checklist items marked complete
-- [ ] All tests written and passing
-- [ ] ESLint/Flake8 passing with no errors
-- [ ] TypeScript/MyPy passing with no errors
-- [ ] Build succeeds without warnings
-- [ ] No incomplete implementations
-- [ ] Documentation updated
-- [ ] Code follows conventions from CONVENTIONS.md
-- [ ] PRD status updated to COMPLETED
-- [ ] PRD moved to completed folder
-
-## FINAL STEPS
-1. Run all quality checks one final time
-2. Update PRD status to COMPLETED
-3. Move PRD: `move_file(".prds/processing/PRD_ID_PLACEHOLDER.md", ".prds/completed/PRD_ID_PLACEHOLDER_COMPLETED.md")`
-4. Add all changes to git in each affected repository
-5. Print "IMPLEMENTATION COMPLETE - PRD ID: PRD_ID_PLACEHOLDER - ALL ITEMS FINISHED"
-6. Generate detailed PR description for each affected repository
-
-## IMPORTANT REMINDERS
-- Work from the SellerSmart-Architecture directory
-- Navigate to service directories as needed
-- Follow the patterns and examples in the PRD
-- Complete ALL items - no partial implementations
-- NEVER mark PRD complete until all tests/linting pass
+Start by reading the PRD file."
 EOF
     
-    # Replace the placeholder with actual PRD ID
-    sed -i '' "s/PRD_ID_PLACEHOLDER/$prd_id/g" "$temp_prompt"
+    # Make the wrapper script executable
+    chmod +x "$wrapper_script"
     
-    # Read the prompt content and escape it properly for shell
-    local prompt_content=$(cat "$temp_prompt" | sed "s/'/'\\\\''/g")
-    
-    # Open new terminal window with Claude
+    # Open new terminal window to run the wrapper script
     osascript -e "tell application \"Terminal\"
         activate
-        do script \"cd /Users/kal/GitHub/SellerSmart-Architecture && claude --dangerously-skip-permissions '$prompt_content' && rm $temp_prompt\"
+        do script \"$wrapper_script\"
     end tell"
     
     echo -e "${GREEN}✓ Opened Claude for $prd_id${NC}"
+    
+    # Schedule cleanup of wrapper script after 5 seconds
+    (sleep 5 && rm -f "$wrapper_script") &
 }
 
 # Main execution
@@ -226,6 +140,7 @@ else
     echo -e "  • Fix any issues before completion"
     echo -e "  • Mark checklist items as complete"
     echo -e "  • Move PRD to completed when done"
+    echo -e "${CYAN}Note: Temporary wrapper scripts will be cleaned up automatically${NC}"
 fi
 
 echo -e "\n${BLUE}═══════════════════════════════════════════════════════════════${NC}"
