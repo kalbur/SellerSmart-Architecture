@@ -20,6 +20,7 @@ All SellerSmart repositories are located at: `/Users/kal/GitHub/`
 ├── SellerSmart-Backend.InvOrders      # Inventory/Orders service
 ├── SellerSmart-Backend.RivalRadar     # Competitor tracking service
 ├── SellerSmart-Backend.WholesaleScan  # Wholesale sourcing service
+├── SellerSmart-Backend.RapReview      # Reputation and review analysis service
 └── SellerSmart-SiteMonitor    # Website monitoring service
 ```
 

@@ -15,6 +15,7 @@ MongoDB collections and schemas used across SellerSmart services.
 - sellersmart_invorders
 - sellersmart_rivalradar
 - sellersmart_wholesale
+- sellersmart_rapreview
 - sellersmart_monitor
 
 ## Note

@@ -42,6 +42,7 @@ The SellerSmart platform consists of the following services:
 | **InvOrders** | Inventory & orders management | TBD | SellerSmart-Backend.InvOrders |
 | **RivalRadar** | Competitor tracking service | TBD | SellerSmart-Backend.RivalRadar |
 | **WholesaleScan** | Wholesale price monitoring | TBD | SellerSmart-Backend.WholesaleScan |
+| **RapReview** | Reputation and review analysis | TBD | SellerSmart-Backend.RapReview |
 | **SiteMonitor** | Website monitoring service | TBD | SellerSmart-SiteMonitor |
 
 ## Getting Started

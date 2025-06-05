@@ -53,6 +53,7 @@ All SellerSmart repositories are located at: /Users/kal/GitHub/
 - SellerSmart-Backend.InvOrders
 - SellerSmart-Backend.RivalRadar
 - SellerSmart-Backend.WholesaleScan
+- SellerSmart-Backend.RapReview
 - SellerSmart-SiteMonitor
 
 ## MCP TOOLS USAGE (MANDATORY WHEN APPLICABLE)

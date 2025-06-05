@@ -56,6 +56,7 @@ claude --dangerously-skip-permissions "You are in: /Users/kal/GitHub/SellerSmart
 - /Users/kal/GitHub/SellerSmart-Backend.InvOrders
 - /Users/kal/GitHub/SellerSmart-Backend.RivalRadar
 - /Users/kal/GitHub/SellerSmart-Backend.WholesaleScan
+- /Users/kal/GitHub/SellerSmart-Backend.RapReview
 - /Users/kal/GitHub/SellerSmart-SiteMonitor
 
 ## QUALITY CHECKS REQUIRED

@@ -8,7 +8,7 @@
 
 ## Problem Statement
 
-The current RivalRadar discovery section lacks visual polish and consistency with the rest of the SellerSmart webapp. Users expect a cohesive experience that matches the detail view's sophistication, including comprehensive graphs, consistent styling, and streamlined actions. The discovery results need to provide at-a-glance insights without requiring navigation to separate detail views.
+The current RivalRadar discovery section lacks visual polish and consistency with the rest of the SellerSmart webapp. Additionally, both the discovery and detail views need enhanced data visualization with multi-line charts for better at-a-glance insights. Users expect a cohesive experience with comprehensive graphs, consistent styling, and streamlined actions without requiring navigation between views.
 
 ## User Needs
 
@@ -16,9 +16,12 @@ The current RivalRadar discovery section lacks visual polish and consistency wit
 - **Consistent visual experience** matching the polished SellerSmart design system
 - **Streamlined rival management** with add/remove actions directly in discovery cards
 - **Advanced filtering options** including excluding already monitored rivals
-- **Rich data visualization** showing performance trends and historical data
+- **Rich data visualization** with multi-line charts showing all performance trends simultaneously
+- **Consistent chart experience** between discovery and detail views
 - **Efficient workflow** for discovering and monitoring new competitors
 - **Integrated brand actions** with BrandScan and BrandWatch task creation directly from discovery cards
+- **Enhanced tooltips** showing comprehensive data points on hover
+- **Self-contained discovery cards** with all essential information - no need to navigate to detail views
 
 ## Codebase Analysis
 
@@ -57,7 +60,7 @@ The current RivalRadar discovery section lacks visual polish and consistency wit
 
 ### **Enhanced Discovery Card Component (EnhancedDiscoveryCard)**
 
-#### **Layout Structure**
+#### **Layout Structure (Following RivalDetailView Pattern)**
 ```typescript
 interface EnhancedDiscoveryCardProps {
   rival: SearchResult;
@@ -67,64 +70,74 @@ interface EnhancedDiscoveryCardProps {
 }
 ```
 
-#### **Left Section - Competitor Info (60% width)**
-- **Header Row**:
-  - Country flag icon with marketplace domain
-  - Seller name (text-lg font-semibold)
-  - Monitoring status badge (green "Monitored" or blue "Add to Radar" button)
-- **Statistics Grid (2x3)**:
-  - Total Listings, Feedback Rating, Feedback Count
-  - Monthly Orders (estimated), VAT Status, Selling Since
-- **Top Brands Section**:
-  - Horizontal scrollable brand tags (max 5 visible)
-  - Each brand clickable to trigger BrandTaskDialog (BrandScan or BrandWatch selection)
-  - Hover effects with visual feedback (following RivalDetailView patterns)
-  - Brand logos with fallback to styled text initials
-  - "View All" link showing total count
-- **Top Categories Section**:
-  - Icon-based category chips (max 4 visible)
-  - Category names with product counts
+#### **Card Header**
+- **Seller Info Row**:
+  - Country flag icon (10x10) with seller name (text-xl font-semibold) 
+  - Domain subtitle (text-sm text-muted-foreground)
+  - Action button: "Add to Radar" (blue) or "Remove from Radar" (destructive variant)
 
-#### **Right Section - Performance Graphs (40% width)**
-- **Multi-Line Chart Container** (height: 200px):
-  - Listings trend (solid blue line)
-  - Reviews count (solid green line) 
-  - Feedback score (dotted orange line, right Y-axis)
-- **Chart Toolbar**:
-  - Time period selector (30D, 90D, 180D, 1Y)
-  - Toggle buttons for each data series
-- **Quick Stats Bar**:
-  - Latest values for each metric
-  - Trend indicators (up/down arrows with percentages)
+#### **Main Content Grid (lg:grid-cols-[250px,1fr] xl:grid-cols-[280px,1fr])**
 
-### **Enhanced Discovery Settings Filter**
+**Left Sidebar - Statistics Card:**
+- **Vertical Stats Layout** (matching RivalDetailView exactly):
+  - Products count (text-2xl font-semibold)
+  - Feedback Count (text-2xl font-semibold) 
+  - Seller Rating with color-coded badge (97% [Excellent])
+  - Est. Monthly Orders range (calculated from ratingsLast30Days)
+  - VAT Status (Registered/Not Registered)
+  - Selling Since (formatted date)
 
-#### **New Filter Option**
-Add to existing VAT/Fulfillment filter section in RadarSettings:
+**Right Side - Enhanced Multi-Line Chart Card:**
+- **Multi-Line Chart Container** (height: 300px - matching RivalDetailView):
+  - Listings trend (solid blue line, left Y-axis)
+  - Reviews count (solid green line, left Y-axis) 
+  - Feedback score (dotted orange line, right Y-axis 80-100 domain)
+  - Interactive tooltips showing all three metrics at each point
+  - No tab navigation - all data visible simultaneously
+
+#### **Full-Width Bottom Sections**
+- **Top Brands Section** (matching RivalDetailView grid layout):
+  - Grid layout (2-5 columns responsive)
+  - Clickable brand cards with hover effects and search icon
+  - Brand logos with fallback support
+  - Product counts per brand
+- **Top Categories Section** (matching RivalDetailView grid layout):
+  - Grid layout with category icons and names
+  - Product counts per category
+
+### **Enhanced Discovery Results Filter**
+
+#### **New Filter Option - Add to Results Filter Panel**
+Add "Exclude Watched Rivals" toggle to the discovery results filter panel (where VAT and Fulfillment dropdowns are located):
 
 ```typescript
-// Add to RadarSettings.tsx
-<Button
-  variant="outline"
-  onClick={() => setExcludeWatched(!excludeWatched)}
-  className={cn(
-    "h-auto w-full justify-between p-3",
-    excludeWatched && "border-primary bg-primary/5 hover:bg-primary/10"
-  )}
->
-  <div className="flex flex-col items-start text-left">
-    <span className="text-sm font-medium">Exclude Watched Rivals</span>
-    <span className="text-xs text-muted-foreground">
-      Hide competitors already being monitored
-    </span>
-  </div>
-  <div className={cn(
-    "flex h-5 w-5 items-center justify-center rounded-full border-2",
-    excludeWatched ? "border-primary bg-primary" : "border-input bg-background"
-  )}>
-    {excludeWatched && <Check className="h-3 w-3 text-primary-foreground" />}
-  </div>
-</Button>
+// Add to TaskFilterDropdown or create dedicated RivalRadarResultsFilter
+{
+  id: "exclude_watched",
+  label: "Filter Options",
+  type: "checkbox",
+  icon: <Eye className="h-4 w-4" />,
+  props: {
+    options: [
+      { 
+        label: "Exclude already watched rivals", 
+        value: "exclude_watched_rivals",
+        icon: <EyeOff className="h-3 w-3" />
+      }
+    ],
+    values: filters.exclude_watched || [],
+    onChange: (values: string[]) => handleFilterChange("exclude_watched", values),
+  },
+}
+```
+
+#### **Filter Panel Layout**
+```
+┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐
+│   VAT STATUS    │ │  FULFILLMENT    │ │    MIN ITEMS    │ │ FILTER OPTIONS  │
+│  ☑️ VAT Reg     │ │  ☑️ FBA Only    │ │     [100]       │ │ ☑️ Exclude      │
+│  ☐ Non-VAT     │ │  ☑️ FBM Only    │ │                 │ │   Watched       │
+└─────────────────┘ └─────────────────┘ └─────────────────┘ └─────────────────┘
 ```
 
 ### **Data Structure Enhancements**
@@ -231,17 +244,36 @@ const EnhancedDiscoveryCard: React.FC<EnhancedDiscoveryCardProps> = ({
 };
 ```
 
-#### **PerformanceChart.tsx** (New Component)
+#### **Enhanced Multi-Line Chart Component (Replaces RivalGrowthChart)**
 ```typescript
-const PerformanceChart: React.FC<PerformanceChartProps> = ({
-  data,
-  timeRange,
-  visibleSeries,
-  height = 200
+interface EnhancedRivalChartProps {
+  ratings: Array<[string, number]>;
+  reviews: Array<[string, number]>;
+  listings: Array<[string, number]>;
+  height?: number;
+}
+
+const EnhancedRivalChart: React.FC<EnhancedRivalChartProps> = ({
+  ratings,
+  reviews,
+  listings,
+  height = 300
 }) => {
+  // Process and merge historical data arrays with interpolation (following RapidReviews pattern)
+  const chartData = useMemo(() => {
+    const processedData = processMultipleHistoricalDataSeries({
+      listings,
+      reviews,
+      ratings
+    });
+    
+    // Apply forward fill interpolation (following keepa-forward-fill.ts pattern)
+    return forwardFillRivalData(processedData, ['listings', 'reviews', 'feedbackScore']);
+  }, [listings, reviews, ratings]);
+
   return (
     <ResponsiveContainer width="100%" height={height}>
-      <ComposedChart data={data}>
+      <ComposedChart data={chartData}>
         <CartesianGrid strokeDasharray="3 3" vertical={false} />
         <XAxis 
           dataKey="date" 
@@ -251,109 +283,240 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({
         <YAxis yAxisId="count" />
         <YAxis yAxisId="score" orientation="right" domain={[80, 100]} />
         
-        <Tooltip content={<CustomTooltip />} />
+        <Tooltip content={<EnhancedMultiLineTooltip />} />
         
-        {visibleSeries.listings && (
-          <Line 
-            yAxisId="count"
-            dataKey="listings" 
-            stroke="#3b82f6" 
-            strokeWidth={2}
-            name="Listings"
-          />
-        )}
+        <Line 
+          yAxisId="count"
+          dataKey="listings" 
+          stroke="#3b82f6" 
+          strokeWidth={2}
+          name="Listings"
+          connectNulls={true}
+        />
         
-        {visibleSeries.reviews && (
-          <Line 
-            yAxisId="count"
-            dataKey="reviews" 
-            stroke="#10b981" 
-            strokeWidth={2}
-            name="Reviews"
-          />
-        )}
+        <Line 
+          yAxisId="count"
+          dataKey="reviews" 
+          stroke="#10b981" 
+          strokeWidth={2}
+          name="Reviews"
+          connectNulls={true}
+        />
         
-        {visibleSeries.feedbackScore && (
-          <Line 
-            yAxisId="score"
-            dataKey="feedbackScore" 
-            stroke="#f59e0b" 
-            strokeWidth={2}
-            strokeDasharray="5 5"
-            name="Feedback Score"
-          />
-        )}
+        <Line 
+          yAxisId="score"
+          dataKey="feedbackScore" 
+          stroke="#f59e0b" 
+          strokeWidth={2}
+          strokeDasharray="5 5"
+          name="Feedback Score"
+          connectNulls={true}
+        />
       </ComposedChart>
     </ResponsiveContainer>
   );
 };
+
+// Enhanced tooltip showing all three metrics (following RapidReviews pattern)
+const EnhancedMultiLineTooltip: React.FC<TooltipProps<any, any>> = ({ 
+  active, payload, label 
+}) => {
+  if (active && payload && payload.length) {
+    // Check if any data is interpolated (following ReviewHistoryGraph pattern)
+    const hasInterpolatedData = payload.some((p: any) => 
+      p.value === null || p.value === undefined || p.payload?.isInterpolated
+    );
+    
+    return (
+      <div className="bg-background border border-border rounded-lg p-3 shadow-lg">
+        <p className="text-sm font-medium mb-2">{label}</p>
+        {payload.map((entry, index) => (
+          <div key={index} className="flex items-center gap-2 text-sm">
+            <div 
+              className="w-3 h-3 rounded-full" 
+              style={{ backgroundColor: entry.color }}
+            />
+            <span className="font-medium">{entry.name}:</span>
+            <span>{entry.value?.toLocaleString()}</span>
+            {entry.name === "Feedback Score" && <span>%</span>}
+          </div>
+        ))}
+        
+        {/* Interpolation indicator (following RapidReviews pattern) */}
+        {hasInterpolatedData && (
+          <p className="mt-2 text-xs italic text-muted-foreground">
+            Data interpolated from nearby dates
+          </p>
+        )}
+      </div>
+    );
+  }
+  return null;
+};
 ```
+
+### **Data Processing Utilities (Following RapidReviews Pattern)**
+
+```typescript
+// Forward fill interpolation utility (adapted from keepa-forward-fill.ts)
+export function forwardFillRivalData(
+  data: Array<{date: string, [key: string]: any}>, 
+  metrics: string[]
+): Array<{date: string, [key: string]: any}> {
+  const sorted = [...data].sort((a, b) => 
+    new Date(a.date).getTime() - new Date(b.date).getTime()
+  );
+  
+  const lastKnown: Record<string, number | null> = {};
+  
+  return sorted.map((point) => {
+    const filled = { ...point };
+    let hasInterpolation = false;
+    
+    for (const metric of metrics) {
+      if (point[metric] !== undefined && point[metric] !== null) {
+        lastKnown[metric] = point[metric];
+      } else if (lastKnown[metric] !== undefined) {
+        filled[metric] = lastKnown[metric];
+        hasInterpolation = true;
+      }
+    }
+    
+    // Mark interpolated points for tooltip indication
+    if (hasInterpolation) {
+      filled.isInterpolated = true;
+    }
+    
+    return filled;
+  });
+}
+
+// Multi-series data processing (merging listings, reviews, ratings arrays)
+export function processMultipleHistoricalDataSeries(data: {
+  listings: Array<[string, number]>;
+  reviews: Array<[string, number]>;
+  ratings: Array<[string, number]>;
+}): Array<{date: string, listings?: number, reviews?: number, feedbackScore?: number}> {
+  // Implementation following rivalradar-data-mapping.ts patterns
+  // Merge all three arrays by date, handle missing values
+  // Sort chronologically and format for charts
+}
+```
+
+### **RivalDetailView Enhancement Requirements**
+
+#### **Update Existing RivalDetailView Component**
+- **Remove Tab Navigation**: Eliminate the current tab system (Listings/Reviews/Feedback Score)
+- **Replace RivalGrowthChart**: Use new EnhancedRivalChart component
+- **Maintain Layout**: Keep existing grid layout and styling exactly the same
+- **Enhanced Tooltips**: Show all three metrics in comprehensive tooltip
+- **Same Height**: Maintain 300px chart height for consistency
+
+#### **Updated RivalDetailView Chart Section**
+```typescript
+// Replace existing chart section in RivalDetailView
+<div className="h-[300px] w-full">
+  <EnhancedRivalChart
+    ratings={mappedResult.ratings || []}
+    reviews={mappedResult.reviews || []}
+    listings={mappedResult.listings || []}
+    height={300}
+  />
+</div>
+```
+
+#### **Remove Tab Controls**
+- Remove Tabs, TabsList, TabsTrigger components
+- Remove activeTab state management
+- Simplify chart header to just "Performance History"
 
 ## Implementation Checklist
 
-### **Phase 1: Component Structure** ✅ Must Have
-- [ ] Create `EnhancedDiscoveryCard` component with left/right layout
-- [ ] Implement competitor info section with statistics grid
-- [ ] Add brand and category display sections
-- [ ] Create monitoring status toggle button
+### **Phase 1: Enhanced Chart Component** ✅ Must Have
+- [ ] Create `EnhancedRivalChart` component with multi-line support
+- [ ] Implement `forwardFillRivalData` utility (following keepa-forward-fill.ts pattern)
+- [ ] Implement `processMultipleHistoricalDataSeries` utility for merging time series
+- [ ] Create enhanced tooltip component with interpolation indicators
+- [ ] Add proper Y-axis scaling for different data types
+- [ ] Configure `connectNulls={true}` for smooth line interpolation
+- [ ] Ensure consistent data interpolation with RapidReviews behavior
 
-### **Phase 2: Data Visualization** ✅ Must Have  
-- [ ] Implement `PerformanceChart` component using Recharts
-- [ ] Add multi-line chart with configurable data series
-- [ ] Implement time range selector (30D, 90D, 180D, 1Y)
-- [ ] Add chart series toggle functionality
-- [ ] Create custom tooltip component
+### **Phase 2: RivalDetailView Update** ✅ Must Have
+- [ ] Update RivalDetailView to use EnhancedRivalChart
+- [ ] Remove tab navigation system (Tabs, TabsList, TabsTrigger)
+- [ ] Remove activeTab state management
+- [ ] Update chart header to remove tab controls
+- [ ] Test existing functionality remains intact
 
-### **Phase 3: Enhanced Filtering** ✅ Must Have
-- [ ] Add "Exclude Watched Rivals" toggle to RadarSettings
+### **Phase 3: Discovery Card Structure** ✅ Must Have
+- [ ] Create `EnhancedDiscoveryCard` component following RivalDetailView layout
+- [ ] Implement header row with flag, seller name, action button
+- [ ] Add left sidebar statistics section (matching RivalDetailView)
+- [ ] Integrate EnhancedRivalChart in main content area
+- [ ] Add full-width brand and category sections
+
+### **Phase 4: Enhanced Filtering** ✅ Must Have
+- [ ] Add "Exclude Watched Rivals" toggle to results filter dropdowns (alongside VAT/Fulfillment filters)
 - [ ] Implement filtering logic in discovery results
 - [ ] Update search/filter state management
 - [ ] Add filter persistence to user preferences
 
-### **Phase 4: Brand Action Integration** ✅ Must Have
+### **Phase 5: Brand Action Integration** ✅ Must Have
 - [ ] Implement clickable brand tags in discovery cards
 - [ ] Integrate with existing BrandTaskDialog event system
 - [ ] Add hover effects and visual feedback for brand interactions
 - [ ] Include brand logos with fallback support
 - [ ] Ensure marketplace context is passed to brand actions
 
-### **Phase 5: Interactive Features** ✅ Must Have
+### **Phase 6: Interactive Features** ✅ Must Have
 - [ ] Add add/remove rival functionality directly in cards
 - [ ] Implement loading states for all async actions
 - [ ] Add error handling and user feedback
 - [ ] Test BrandScan and BrandWatch task creation from discovery cards
 
-### **Phase 6: Integration & Polish** ✅ Must Have
+### **Phase 7: Integration & Polish** ✅ Must Have
 - [ ] Replace existing discovery card component
 - [ ] Update RivalDiscovery to use EnhancedDiscoveryCard
 - [ ] Ensure responsive design for mobile/tablet
 - [ ] Add animation transitions matching SellerSmart patterns
 - [ ] Implement proper skeleton loading states
 
-### **Phase 7: Data Processing** ✅ Must Have
+### **Phase 8: Data Processing** ✅ Must Have
 - [ ] Enhance backend API to include historical performance data
 - [ ] Implement data transformation utilities
 - [ ] Add monitoring status tracking in search results
 - [ ] Optimize chart data processing for performance
 
-### **Phase 8: Testing & Validation** ✅ Should Have
+### **Phase 9: Testing & Validation** ✅ Should Have
 - [ ] Unit tests for new components
 - [ ] Integration tests for monitoring actions and brand actions
 - [ ] Visual regression tests for design consistency
 - [ ] Performance testing for chart rendering
 - [ ] User acceptance testing with discovery workflow
 - [ ] Test BrandTaskDialog integration with discovery cards
+- [ ] Test RivalDetailView chart enhancement
 
 ## Success Criteria
 
 ### **Functional Requirements**
-- Discovery cards display comprehensive competitor information at a glance
-- Multi-line performance charts show historical trends effectively
+- Discovery cards are **self-contained** with all essential competitor information
+- **No navigation needed** - discovery cards replace the need for detail view navigation
+- Multi-line performance charts show all historical trends simultaneously
 - Add/remove rival actions work seamlessly without navigation
 - Brand click actions successfully trigger BrandTaskDialog with both BrandScan and BrandWatch options
 - Brand logos display correctly with fallback support
 - Filter excludes already monitored rivals correctly
 - Marketplace context is correctly passed to brand action dialogs
+
+### **Information Parity with RivalDetailView**
+Discovery cards include **all key information** from RivalDetailView:
+- ✅ **Header Information**: Country flag, seller name, domain, monitoring status
+- ✅ **Core Statistics**: Products count, feedback count, seller rating with badge
+- ✅ **Business Information**: Est. monthly orders, VAT status, selling since date
+- ✅ **Performance Visualization**: Multi-line chart showing listings/reviews/feedback trends
+- ✅ **Brand Analysis**: Top brands with logos, product counts, clickable actions
+- ✅ **Category Analysis**: Top categories with icons and product counts
+- ✅ **Action Capabilities**: Add/remove monitoring, brand task creation
 
 ### **User Experience Requirements**
 - Discovery section visual design matches SellerSmart detail views
@@ -363,6 +526,8 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({
 - Brand and category information is easily scannable
 - Brand hover effects provide clear indication of interactivity
 - BrandTaskDialog opens smoothly with appropriate brand and marketplace context
+- **Streamlined workflow** - users can complete entire discovery → analysis → action workflow without navigation
+- **Reduced cognitive load** - all necessary information visible in single cards
 
 ### **Performance Requirements**
 - Discovery page loads within 2 seconds with 10+ rival cards

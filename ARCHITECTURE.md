@@ -20,13 +20,13 @@ SellerSmart follows a microservices architecture pattern with a central API gate
 │  (API Gateway)  │
 └────────┬────────┘
          │
-    ┌────┴────┬──────┬──────┬──────┬──────┐
-    ▼         ▼      ▼      ▼      ▼      ▼
-┌────────┐┌────────┐┌────────┐┌────────┐┌────────┐
-│Brand   ││Inv     ││Rival   ││Whole   ││Site    │
-│Scan    ││Orders  ││Radar   ││sale    ││Monitor │
-│Service ││Service ││Service ││Scan    ││Service │
-└────────┘└────────┘└────────┘└────────┘└────────┘
+    ┌────┴────┬──────┬──────┬──────┬──────┬──────┐
+    ▼         ▼      ▼      ▼      ▼      ▼      ▼
+┌────────┐┌────────┐┌────────┐┌────────┐┌────────┐┌────────┐
+│Brand   ││Inv     ││Rival   ││Whole   ││Rap     ││Site    │
+│Scan    ││Orders  ││Radar   ││sale    ││Review  ││Monitor │
+│Service ││Service ││Service ││Scan    ││Service ││Service │
+└────────┘└────────┘└────────┘└────────┘└────────┘└────────┘
 ```
 
 ## Services
@@ -37,6 +37,7 @@ SellerSmart follows a microservices architecture pattern with a central API gate
 - **InvOrders**: Inventory and order management
 - **RivalRadar**: Competitor tracking
 - **WholesaleScan**: Wholesale supplier management
+- **RapReview**: Reputation and review analysis
 - **SiteMonitor**: E-commerce website monitoring
 
 ## Database

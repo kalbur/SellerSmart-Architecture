@@ -24,6 +24,7 @@ REPOS=(
     "SellerSmart-Backend.InvOrders"
     "SellerSmart-Backend.RivalRadar"
     "SellerSmart-Backend.WholesaleScan"
+    "SellerSmart-Backend.RapReview"
     "SellerSmart-SiteMonitor"
 )
 
