@@ -160,136 +160,47 @@ commit_repo_with_claude() {
     
     echo -e "\n${CYAN}Opening Claude for $repo...${NC}"
     
-    # Create a temporary file for the prompt
-    local temp_prompt="/tmp/claude_commit_${repo//[^a-zA-Z0-9]/_}.txt"
+    # Create a wrapper script that Claude will execute
+    local wrapper_script="/tmp/claude_commit_${repo//[^a-zA-Z0-9]/_}.sh"
     
-    # Write the base prompt to the temp file
-    cat > "$temp_prompt" << 'EOF'
-# COMMIT AND PUSH CHANGES FOR REPO_PLACEHOLDER
+    # Write the wrapper script
+    cat > "$wrapper_script" << EOF
+#!/bin/bash
+cd $repo_path
 
-## CURRENT LOCATION
-You are in: REPO_PATH_PLACEHOLDER
+# First prompt to Claude
+claude --dangerously-skip-permissions "You are in: $repo_path
 
-## IMPORTANT: ATOMIC COMMITS STRATEGY
-Instead of committing all changes at once, create separate commits for different concerns:
-1. Group related changes together
-2. Each commit should have a single, clear purpose
-3. Use descriptive commit messages that explain WHAT and WHY
+## TASK: Commit all changes using atomic commits strategy
 
-## WORKFLOW FOR ATOMIC COMMITS
-1. First, check all changes: git status -s
-2. Review changes in detail: git diff
-3. Identify logical groups of changes (e.g., bug fixes, new features, refactoring, tests)
-4. LOOP: While there are still uncommitted changes:
-   a. Identify next logical group of related changes
-   b. Stage only those files: git add <specific files>
-   c. Create descriptive commit: git commit -m "type: description"
-   d. If hooks fail, fix and retry that commit
-   e. Run git status to check remaining changes
-   f. REPEAT until git status shows clean working tree
-5. Only after ALL changes committed: git push
+1. Run: git status -s
+2. Review all changes with: git diff
+3. Group related changes and create separate commits for each group
+4. Use conventional commit format (feat:, fix:, docs:, etc.)
+5. After EACH commit, check git status again
+6. Continue until ALL changes are committed (working tree clean)
+7. Fix any pre-commit hook failures
+8. Push only after all changes are committed
 
-## COMMIT MESSAGE FORMAT
-Use conventional commits format:
-- feat: new feature
-- fix: bug fix
-- docs: documentation changes
-- style: formatting, missing semicolons, etc
-- refactor: code restructuring
-- test: adding tests
-- chore: maintenance tasks
+IMPORTANT: 
+- Never use --no-verify
+- Keep making commits until git status shows nothing to commit
+- One commit per logical change/feature/fix
+$(if [[ "$wait_for_ci" == "true" ]]; then echo "- After pushing, monitor CI and fix any failures"; fi)
 
-Example of splitting commits:
-- git add src/components/UserProfile.tsx src/components/UserProfile.test.tsx
-- git commit -m "feat: add user profile component with avatar support"
-- git add src/api/auth.ts src/types/auth.ts
-- git commit -m "fix: resolve authentication token refresh issue"
-- git add README.md docs/API.md
-- git commit -m "docs: update API documentation with new endpoints"
+Start by running: git status -s"
 
-## REQUIREMENTS
-1. NEVER use --no-verify or bypass pre-commit hooks
-2. If pre-commit hooks fail:
-   - Fix ALL issues that caused the failure
-   - Do not proceed until all checks pass
-   - Re-stage fixed files and commit again
-3. After all commits, push to remote
-4. If push fails due to no upstream: git push --set-upstream origin $(git branch --show-current)
-
-## STEP-BY-STEP PROCESS
-1. cd REPO_PATH_PLACEHOLDER
-2. git status -s (see all changes)
-3. git diff (review changes in detail)
-4. Identify logical groups of changes
-5. For each group:
-   - git add <specific related files>
-   - git commit -m "type: descriptive message"
-   - If hooks fail, fix issues and retry
-6. IMPORTANT: After EACH commit, run git status again
-7. CONTINUE creating commits until git status shows NO changes
-8. Only after ALL changes are committed: git push
-
-## CRITICAL: COMMIT ALL CHANGES
-- Do NOT stop after one commit
-- Keep checking git status after each commit
-- Continue until working directory is completely clean
-- Common mistake: stopping after first commit when more changes remain
-- VERIFY: git status should show "nothing to commit, working tree clean"
+# Clean up
+rm -f $wrapper_script
 EOF
-
-    # Add CI monitoring section if enabled
-    if [[ "$wait_for_ci" == "true" ]]; then
-        cat >> "$temp_prompt" << 'EOF'
-
-## CI/CD MONITORING (ENABLED)
-After pushing all commits:
-1. Monitor the CI/CD pipeline status
-2. If CI fails:
-   - Analyze the error logs
-   - Fix the issues locally
-   - Create a new commit with the fixes
-   - Push again
-   - Repeat until CI passes
-3. Common CI failures to watch for:
-   - Build errors
-   - Test failures
-   - Coverage drops
-   - Linting issues in files you didn't edit
-   - Integration test failures
-4. Use these commands to check CI status:
-   - GitHub: Check Actions tab or use 'gh run list'
-   - GitLab: Check Pipelines or use 'glab pipeline list'
-   - Or wait for status checks on the PR
-
-IMPORTANT: Do not close this terminal until CI passes!
-EOF
-    fi
-
-    # Add final reminders
-    cat >> "$temp_prompt" << 'EOF'
-
-## IMPORTANT REMINDERS
-- One commit per concern (don't mix features with fixes)
-- Descriptive messages (not "fix stuff" or "updates")
-- Include context in commit messages
-- Fix all linting/type/test errors before committing
-- Each commit should pass all quality checks
-- CRITICAL: Continue making commits until ALL changes are committed
-- Do not leave any uncommitted changes - check git status repeatedly
-- Only push after working tree is completely clean
-
-Start by checking the current status and analyzing what changes can be grouped together.
-Then continue committing until there are NO remaining changes.
-EOF
-
-    # Replace placeholders
-    sed -i '' "s|REPO_PLACEHOLDER|$repo|g" "$temp_prompt"
-    sed -i '' "s|REPO_PATH_PLACEHOLDER|$repo_path|g" "$temp_prompt"
     
-    # Open new terminal window with Claude using the temp file
+    # Make the wrapper script executable
+    chmod +x "$wrapper_script"
+    
+    # Open new terminal window to run the wrapper script
     osascript -e "tell application \"Terminal\"
         activate
-        do script \"cd $repo_path && claude --dangerously-skip-permissions < $temp_prompt && rm $temp_prompt\"
+        do script \"$wrapper_script\"
     end tell"
     
     echo -e "${GREEN}✓ Opened Claude for $repo${NC}"
@@ -303,63 +214,46 @@ quick_commit_with_claude() {
     
     echo -e "\n${CYAN}Opening Claude for quick commit in $repo...${NC}"
     
-    # Create a temporary file for the prompt
-    local temp_prompt="/tmp/claude_quick_${repo//[^a-zA-Z0-9]/_}.txt"
+    # Create a wrapper script for quick commits
+    local wrapper_script="/tmp/claude_quick_${repo//[^a-zA-Z0-9]/_}.sh"
     
-    # Write the prompt to the temp file
-    cat > "$temp_prompt" << 'EOF'
-# QUICK COMMIT ALL CHANGES FOR REPO_PLACEHOLDER
+    # Write the wrapper script
+    cat > "$wrapper_script" << EOF
+#!/bin/bash
+cd $repo_path
 
-## CURRENT LOCATION
-You are in: REPO_PATH_PLACEHOLDER
+# Prompt to Claude for quick commit
+claude --dangerously-skip-permissions "You are in: $repo_path
 
-## QUICK COMMIT MODE
-This is for when all changes are related and can be committed together.
+## TASK: Quick commit - ALL changes in ONE commit
 
-## WORKFLOW
-1. cd REPO_PATH_PLACEHOLDER
-2. git status
-3. Review all changes
-4. git add -A
-5. Create ONE descriptive commit message that summarizes all changes
-6. git commit -m "type: comprehensive description of all changes"
-7. If pre-commit hooks fail:
-   - Fix ALL issues
-   - Commit again
-8. git push
-EOF
+1. Run: git status
+2. Review all changes
+3. Run: git add -A
+4. Create ONE descriptive commit message that summarizes all changes
+5. Run: git commit -m 'type: comprehensive description'
+6. If pre-commit hooks fail, fix ALL issues and commit again
+7. After successful commit: git push
+$(if [[ "$wait_for_ci" == "true" ]]; then echo "8. Monitor CI and fix any failures"; fi)
 
-    # Add CI monitoring if enabled
-    if [[ "$wait_for_ci" == "true" ]]; then
-        cat >> "$temp_prompt" << 'EOF'
-
-## CI/CD MONITORING (ENABLED)
-After pushing:
-1. Monitor CI status
-2. Fix any failures and push fixes
-3. Repeat until CI passes
-EOF
-    fi
-
-    # Add final section
-    cat >> "$temp_prompt" << 'EOF'
-
-## IMPORTANT
-- Still create a good commit message
-- NEVER use --no-verify
+IMPORTANT:
+- Still create a good descriptive commit message
+- Never use --no-verify
 - Fix all hook failures before proceeding
 
-Start by checking status and creating an appropriate commit message.
-EOF
+Start by running: git status"
 
-    # Replace placeholders
-    sed -i '' "s|REPO_PLACEHOLDER|$repo|g" "$temp_prompt"
-    sed -i '' "s|REPO_PATH_PLACEHOLDER|$repo_path|g" "$temp_prompt"
+# Clean up
+rm -f $wrapper_script
+EOF
     
-    # Open new terminal window with Claude using the temp file
+    # Make the wrapper script executable
+    chmod +x "$wrapper_script"
+    
+    # Open new terminal window to run the wrapper script
     osascript -e "tell application \"Terminal\"
         activate
-        do script \"cd $repo_path && claude --dangerously-skip-permissions < $temp_prompt && rm $temp_prompt\"
+        do script \"$wrapper_script\"
     end tell"
     
     echo -e "${GREEN}✓ Opened Claude for quick commit in $repo${NC}"
