@@ -12,12 +12,11 @@ NC='\033[0m' # No Color
 
 # Check if PRD_ID is provided
 if [ -z "$1" ]; then
-    echo -e "${RED}Error: PRD_ID is required${NC}"
-    echo "Usage: ./scripts/execute-prd.sh PRD_YYYYMMDD_HHMM_feature_slug"
+    echo -e "${RED}No PRD_ID provided - launching multi-PRD mode${NC}"
     echo ""
-    echo "Available PRDs in processing:"
-    ls -1 .prds/processing/*.md 2>/dev/null | sed 's|.prds/processing/||' | sed 's|.md||' || echo "  No PRDs found in processing"
-    exit 1
+    # Execute the multi-PRD script
+    exec "$0-multi"
+    exit 0
 fi
 
 PRD_ID="$1"
