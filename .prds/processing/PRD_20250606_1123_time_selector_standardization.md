@@ -51,7 +51,7 @@ The SellerSmart Web application has inconsistent time selector implementations a
 **Code Examples to Follow**:
 ```typescript
 // Standard time selector integration (from ReimbursementsOverviewClient)
-const [activePeriod, setActivePeriod] = useState<number>(30); // Standardized default
+const [activePeriod, setActivePeriod] = useState<number>(180); // Standardized default
 
 const handlePeriodChange = useCallback((period: number) => {
     setActivePeriod(period);
@@ -72,7 +72,7 @@ const { startDate, endDate } = getDateRangeFromDays(activePeriod);
 
 ### 1. Standardize Default Time Periods
 - **Current State**: Inconsistent defaults (180 days, null)
-- **Target State**: All pages use 30 days as default
+- **Target State**: All pages use 180 days as default (provides richer data for widgets)
 - **Affected Components**:
   - `/src/app/dashboard/DashboardClient.tsx:350`
   - `/src/app/orders/OrdersOverviewClient.tsx:43`
@@ -102,13 +102,13 @@ const { startDate, endDate } = getDateRangeFromDays(activePeriod);
 
 ## Implementation Checklist
 
-### Phase 1: Standardize Default Periods (2 hours)
-- [ ] Update Dashboard default from 180 to 30 days (`DashboardClient.tsx:350`)
-- [ ] Update Orders default from 180 to 30 days (`OrdersOverviewClient.tsx:43`)
-- [ ] Update Returns default from 180 to 30 days (`ReturnsOverviewClient.tsx:37-40`)
-- [ ] Update Reimbursements default from 180 to 30 days (`ReimbursementsOverviewClient.tsx:34`)
-- [ ] Update Removal Orders from null to 30 days (`RemovalOrdersClient.tsx:35`)
-- [ ] Test all pages load with 30-day default data
+### Phase 1: Standardize Default Periods (1 hour)
+- [ ] Keep Dashboard at 180 days (already correct)
+- [ ] Keep Orders at 180 days (already correct)  
+- [ ] Keep Returns at 180 days (already correct)
+- [ ] Keep Reimbursements at 180 days (already correct)
+- [ ] Update Removal Orders from null to 180 days (`RemovalOrdersClient.tsx:35`)
+- [ ] Test all pages load with 180-day default data
 
 ### Phase 2: Fix Conflicting Filters (1 hour)
 - [ ] Remove hardcoded 14-day filter from Orders `defaultFilters` (`OrdersOverviewClient.tsx:18-24`)
@@ -123,7 +123,7 @@ const { startDate, endDate } = getDateRangeFromDays(activePeriod);
 - [ ] Test Returns page time selector functionality
 
 ### Phase 4: Fix Removal Orders Integration (1 hour)
-- [ ] Replace null default with 30-day default (`RemovalOrdersClient.tsx:35`)
+- [ ] Replace null default with 180-day default (`RemovalOrdersClient.tsx:35`)
 - [ ] Remove conditional logic for null period (`RemovalOrdersClient.tsx:81-88`)
 - [ ] Update PeriodSelector to use standard pattern (`RemovalOrdersClient.tsx:469`)
 - [ ] Update RemovalOrdersOverview prop handling (`RemovalOrdersClient.tsx:503`)
@@ -131,7 +131,7 @@ const { startDate, endDate } = getDateRangeFromDays(activePeriod);
 
 ### Phase 5: Verification and Testing (1-2 hours)
 - [ ] Test each overview page time selector changes all dependent widgets
-- [ ] Verify consistent 30-day default across all pages
+- [ ] Verify consistent 180-day default across all pages
 - [ ] Test time selector state persistence during navigation
 - [ ] Verify API calls include proper date parameters for all pages
 - [ ] Test edge cases (switching between periods rapidly)
@@ -156,7 +156,7 @@ const { startDate, endDate } = getDateRangeFromDays(activePeriod);
 ## Success Criteria
 
 ### Functional Requirements
-- [ ] All overview pages have consistent 30-day default time period
+- [ ] All overview pages have consistent 180-day default time period
 - [ ] Time selector changes update all dependent widgets and stats
 - [ ] No conflicting date filters override time selector behavior
 - [ ] All pages use single, simple time range state management
@@ -181,8 +181,8 @@ const { startDate, endDate } = getDateRangeFromDays(activePeriod);
 
 ## Risks and Mitigation
 
-**Risk**: Changing defaults might confuse users expecting 180-day data
-**Mitigation**: 30 days is more practical default, users can still select 180 days
+**Risk**: Changing Removal Orders from null to 180 days might show more data than expected
+**Mitigation**: 180 days provides richer insights, consistent with other pages
 
 **Risk**: API calls might not support all required date parameters  
 **Mitigation**: Analysis shows all APIs already support startDate/endDate parameters
@@ -195,4 +195,4 @@ const { startDate, endDate } = getDateRangeFromDays(activePeriod);
 - This standardization improves user experience consistency
 - Reduces complexity in Returns page dual state management  
 - Ensures time selectors actually control all page data as users expect
-- 30-day default is more practical for most business analysis use cases
+- 180-day default provides richer data for meaningful business insights and trend analysis
