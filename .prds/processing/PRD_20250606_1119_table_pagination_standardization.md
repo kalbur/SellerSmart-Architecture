@@ -128,7 +128,7 @@ interface PaginatedResponse<T> {
 
 ### Phase 2: Core Table Fixes
 **Priority Order** (by user impact):
-1. [ ] **Orders Table** (`src/app/orders/data/client.tsx`)
+1. [x] **Orders Table** (`src/app/orders/data/client.tsx`)
    - Remove client-side `filteredOrders.slice()`
    - Use server `meta.total` for pagination
    - Fix `totalPages` calculation
