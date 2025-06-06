@@ -1,0 +1,24 @@
+{
+  "timestamp": "2025-06-05T17:32:07.223Z",
+  "serverUrl": "http://localhost:3000",
+  "tests": [
+    {
+      "name": "Navigate to inventory/data",
+      "status": "PASSED",
+      "details": "Successfully loaded inventory data page"
+    },
+    {
+      "name": "Find Columns button",
+      "status": "FAILED",
+      "details": "Columns button not found on inventory/data page"
+    },
+    {
+      "name": "Navigate to test-layout-manager",
+      "status": "FAILED",
+      "details": "Navigation failed: page.goto: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/test-layout-manager\", waiting until \"networkidle\"\u001b[22m\n"
+    }
+  ],
+  "screenshots": [
+    "inventory-data-page-1749144744405.png"
+  ]
+}

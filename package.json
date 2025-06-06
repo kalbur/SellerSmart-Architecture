@@ -1,0 +1,16 @@
+{
+  "name": "sellersmart-architecture",
+  "version": "1.0.0",
+  "description": "This repository contains all architectural documentation, PRDs, and project standards for the SellerSmart ecosystem.",
+  "main": "column-dropdown-test-script.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@playwright/test": "^1.52.0",
+    "playwright": "^1.52.0"
+  }
+}

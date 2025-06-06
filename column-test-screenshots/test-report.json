@@ -1,0 +1,43 @@
+{
+  "timestamp": "2025-06-05T17:45:19.055Z",
+  "summary": {
+    "totalPagesTest": 8,
+    "pagesWithTables": 0,
+    "totalColumnDropdowns": 0,
+    "errors": 7
+  },
+  "results": {
+    "pagesWithTables": [],
+    "columnDropdownTests": [],
+    "errors": [
+      {
+        "page": "/inventory/data",
+        "error": "page.goto: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/inventory/data\", waiting until \"networkidle\"\u001b[22m\n"
+      },
+      {
+        "page": "/orders",
+        "error": "page.goto: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/orders\", waiting until \"networkidle\"\u001b[22m\n"
+      },
+      {
+        "page": "/test-layout-manager",
+        "error": "page.goto: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/test-layout-manager\", waiting until \"networkidle\"\u001b[22m\n"
+      },
+      {
+        "page": "/dashboard",
+        "error": "page.goto: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/dashboard\", waiting until \"networkidle\"\u001b[22m\n"
+      },
+      {
+        "page": "/products",
+        "error": "page.goto: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/products\", waiting until \"networkidle\"\u001b[22m\n"
+      },
+      {
+        "page": "/analytics",
+        "error": "page.goto: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/analytics\", waiting until \"networkidle\"\u001b[22m\n"
+      },
+      {
+        "page": "/settings",
+        "error": "page.goto: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/settings\", waiting until \"networkidle\"\u001b[22m\n"
+      }
+    ]
+  }
+}

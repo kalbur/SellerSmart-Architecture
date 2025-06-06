@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Column Dropdown Test - SellerSmart</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        
+        .test-container {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .test-header {
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .test-section {
+            margin-bottom: 32px;
+        }
+        
+        .test-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .test-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            margin-bottom: 8px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border-left: 4px solid #6c757d;
+        }
+        
+        .test-item.pass {
+            border-color: #28a745;
+            background: #d4edda;
+        }
+        
+        .test-item.fail {
+            border-color: #dc3545;
+            background: #f8d7da;
+        }
+        
+        .test-checkbox {
+            margin-right: 12px;
+            transform: scale(1.2);
+        }
+        
+        .button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 4px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .button:hover {
+            background: #0056b3;
+        }
+        
+        .button.secondary {
+            background: #6c757d;
+        }
+        
+        .button.secondary:hover {
+            background: #545b62;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-pass { background: #28a745; }
+        .status-fail { background: #dc3545; }
+        .status-pending { background: #ffc107; }
+        
+        .instructions {
+            background: #e3f2fd;
+            border: 1px solid #bbdefb;
+            border-radius: 6px;
+            padding: 16px;
+            margin: 16px 0;
+        }
+        
+        .code-block {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 12px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin: 8px 0;
+        }
+        
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin: 24px 0;
+        }
+        
+        .stat-card {
+            background: #f8f9fa;
+            padding: 16px;
+            border-radius: 6px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+        }
+        
+        .links {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin: 16px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1>🧪 Column Dropdown Functionality Testing</h1>
+            <p>Manual testing checklist for SellerSmart table column management features</p>
+            
+            <div class="links">
+                <a href="http://localhost:3003/test-layout-manager" class="button" target="_blank">
+                    🔬 Test Layout Manager Page
+                </a>
+                <a href="http://localhost:3003/inventory/data" class="button" target="_blank">
+                    📊 Inventory Data Page
+                </a>
+                <a href="http://localhost:3003/test-table" class="button secondary" target="_blank">
+                    📋 Basic Table Test
+                </a>
+            </div>
+        </div>
+
+        <div class="instructions">
+            <h3>🚀 Quick Start Instructions</h3>
+            <ol>
+                <li>Open one of the test pages above in a new tab</li>
+                <li>Look for the <strong>"Columns"</strong> button (usually in the top-right area)</li>
+                <li>Test each functionality listed below</li>
+                <li>Check off completed tests using the checkboxes</li>
+                <li>Note any issues in the text areas provided</li>
+            </ol>
+        </div>
+
+        <div class="test-section">
+            <h2>🎯 Core Functionality Tests</h2>
+            
+            <ul class="test-list">
+                <li class="test-item">
+                    <input type="checkbox" class="test-checkbox" id="test1">
+                    <label for="test1">
+                        <strong>Columns Button Exists:</strong> 
+                        Find and click the "Columns" button with gear/settings icon
+                    </label>
+                </li>
+                
+                <li class="test-item">
+                    <input type="checkbox" class="test-checkbox" id="test2">
+                    <label for="test2">
+                        <strong>Dropdown Opens:</strong> 
+                        Clicking the button opens a dropdown showing all available columns
+                    </label>
+                </li>
+                
+                <li class="test-item">
+                    <input type="checkbox" class="test-checkbox" id="test3">
+                    <label for="test3">
+                        <strong>Columns Listed with Checkboxes:</strong> 
+                        All table columns are shown with checkboxes indicating current visibility
+                    </label>
+                </li>
+                
+                <li class="test-item">
+                    <input type="checkbox" class="test-checkbox" id="test4">
+                    <label for="test4">
+                        <strong>Checkbox Toggle Works:</strong> 
+                        Clicking checkboxes immediately shows/hides columns in the table
+                    </label>
+                </li>
+                
+                <li class="test-item">
+                    <input type="checkbox" class="test-checkbox" id="test5">
+                    <label for="test5">
+                        <strong>Dropdown Stays Open:</strong> 
+                        Dropdown remains open when clicking checkboxes (doesn't auto-close)
+                    </label>
+                </li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h2>🎛️ Drag & Drop Tests</h2>
+            
+            <ul class="test-list">
+                <li class="test-item">
+                    <input type="checkbox" class="test-checkbox" id="test6">
+                    <label for="test6">
+                        <strong>Grip Handles Visible:</strong> 
+                        Each column item shows grip handles (⋮⋮ vertical dots icon)
+                    </label>
+                </li>
+                
+                <li class="test-item">
+                    <input type="checkbox" class="test-checkbox" id="test7">
+                    <label for="test7">
+                        <strong>Cursor Changes on Hover:</strong> 
+                        Hovering over grip handles changes cursor to grab/drag cursor
+                    </label>
+                </li>
+                
+                <li class="test-item">
+                    <input type="checkbox" class="test-checkbox" id="test8">
+                    <label for="test8">
+                        <strong>Drag Functionality Works:</strong> 
+                        Can click and drag column items using the grip handles
+                    </label>
+                </li>
+                
+                <li class="test-item">
+                    <input type="checkbox" class="test-checkbox" id="test9">
+                    <label for="test9">
+                        <strong>Live Reordering:</strong> 
+                        While dragging, items reorder in real-time within the dropdown
+                    </label>
+                </li>
+                
+                <li class="test-item">
+                    <input type="checkbox" class="test-checkbox" id="test10">
+                    <label for="test10">
+                        <strong>Table Updates:</strong> 
+                        Dropping items updates the table column order immediately
+                    </label>
+                </li>
+                
+                <li class="test-item">
+                    <input type="checkbox" class="test-checkbox" id="test11">
+                    <label for="test11">
+                        <strong>Drag Doesn't Close Dropdown:</strong> 
+                        Dropdown stays open during entire drag operation
+                    </label>
+                </li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h2>🎮 Interaction Tests</h2>
+            
+            <ul class="test-list">
+                <li class="test-item">
+                    <input type="checkbox" class="test-checkbox" id="test12">
+                    <label for="test12">
+                        <strong>Click Outside Closes:</strong> 
+                        Clicking outside the dropdown closes it properly
+                    </label>
+                </li>
+                
+                <li class="test-item">
+                    <input type="checkbox" class="test-checkbox" id="test13">
+                    <label for="test13">
+                        <strong>ESC Key Closes:</strong> 
+                        Pressing Escape key closes the dropdown
+                    </label>
+                </li>
+                
+                <li class="test-item">
+                    <input type="checkbox" class="test-checkbox" id="test14">
+                    <label for="test14">
+                        <strong>Rapid Clicking Stable:</strong> 
+                        Rapidly clicking checkboxes doesn't break functionality
+                    </label>
+                </li>
+                
+                <li class="test-item">
+                    <input type="checkbox" class="test-checkbox" id="test15">
+                    <label for="test15">
+                        <strong>Multiple Columns Toggle:</strong> 
+                        Can toggle multiple columns on/off without issues
+                    </label>
+                </li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h2>📱 Device & Browser Tests</h2>
+            
+            <ul class="test-list">
+                <li class="test-item">
+                    <input type="checkbox" class="test-checkbox" id="test16">
+                    <label for="test16">
+                        <strong>Desktop Chrome:</strong> 
+                        All functionality works in Chrome browser
+                    </label>
+                </li>
+                
+                <li class="test-item">
+                    <input type="checkbox" class="test-checkbox" id="test17">
+                    <label for="test17">
+                        <strong>Desktop Firefox:</strong> 
+                        All functionality works in Firefox browser
+                    </label>
+                </li>
+                
+                <li class="test-item">
+                    <input type="checkbox" class="test-checkbox" id="test18">
+                    <label for="test18">
+                        <strong>Desktop Safari:</strong> 
+                        All functionality works in Safari browser
+                    </label>
+                </li>
+                
+                <li class="test-item">
+                    <input type="checkbox" class="test-checkbox" id="test19">
+                    <label for="test19">
+                        <strong>Mobile Touch:</strong> 
+                        Touch interactions work on mobile devices (tap checkboxes, drag handles)
+                    </label>
+                </li>
+                
+                <li class="test-item">
+                    <input type="checkbox" class="test-checkbox" id="test20">
+                    <label for="test20">
+                        <strong>Tablet Touch:</strong> 
+                        Touch interactions work well on tablet-sized screens
+                    </label>
+                </li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h2>📝 Notes & Issues</h2>
+            <textarea 
+                placeholder="Record any issues, unexpected behaviors, or notes here..."
+                style="width: 100%; height: 120px; padding: 12px; border: 1px solid #ccc; border-radius: 4px; font-family: inherit; resize: vertical;"
+            ></textarea>
+        </div>
+
+        <div class="summary-stats">
+            <div class="stat-card">
+                <div class="stat-number" id="completed-count">0</div>
+                <div>Tests Completed</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="completion-rate">0%</div>
+                <div>Completion Rate</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="remaining-count">20</div>
+                <div>Tests Remaining</div>
+            </div>
+        </div>
+
+        <div class="instructions">
+            <h3>🔧 Browser Console Testing</h3>
+            <p>For automated testing, copy and paste this script into your browser console:</p>
+            <div class="code-block">
+// Open browser dev tools (F12) and paste this code
+fetch('/column-dropdown-test-script.js')
+  .then(response => response.text())
+  .then(script => eval(script))
+  .catch(() => console.log('Manual script loading required'));
+            </div>
+            <p>Or run the manual testing helpers:</p>
+            <div class="code-block">
+columnDropdownTests.highlightColumnsButton();
+columnDropdownTests.openDropdown();
+columnDropdownTests.highlightInteractiveElements();
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Track completion stats
+        function updateStats() {
+            const checkboxes = document.querySelectorAll('.test-checkbox');
+            const completed = Array.from(checkboxes).filter(cb => cb.checked).length;
+            const total = checkboxes.length;
+            const rate = Math.round((completed / total) * 100);
+            
+            document.getElementById('completed-count').textContent = completed;
+            document.getElementById('completion-rate').textContent = rate + '%';
+            document.getElementById('remaining-count').textContent = total - completed;
+            
+            // Update test item styling
+            checkboxes.forEach(checkbox => {
+                const testItem = checkbox.closest('.test-item');
+                if (checkbox.checked) {
+                    testItem.classList.add('pass');
+                    testItem.classList.remove('fail');
+                } else {
+                    testItem.classList.remove('pass');
+                    // Don't add fail class automatically - that's for actual failures
+                }
+            });
+        }
+        
+        // Add event listeners to checkboxes
+        document.querySelectorAll('.test-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', updateStats);
+        });
+        
+        // Initialize stats
+        updateStats();
+        
+        // Auto-save to localStorage
+        function saveProgress() {
+            const data = {};
+            document.querySelectorAll('.test-checkbox').forEach(checkbox => {
+                data[checkbox.id] = checkbox.checked;
+            });
+            const notes = document.querySelector('textarea').value;
+            data.notes = notes;
+            localStorage.setItem('columnDropdownTestProgress', JSON.stringify(data));
+        }
+        
+        function loadProgress() {
+            const saved = localStorage.getItem('columnDropdownTestProgress');
+            if (saved) {
+                const data = JSON.parse(saved);
+                Object.entries(data).forEach(([id, checked]) => {
+                    if (id === 'notes') {
+                        document.querySelector('textarea').value = checked;
+                    } else {
+                        const checkbox = document.getElementById(id);
+                        if (checkbox) checkbox.checked = checked;
+                    }
+                });
+                updateStats();
+            }
+        }
+        
+        // Auto-save on changes
+        document.addEventListener('change', saveProgress);
+        document.querySelector('textarea').addEventListener('input', saveProgress);
+        
+        // Load saved progress
+        loadProgress();
+        
+        console.log('📋 Column Dropdown Test Page Loaded');
+        console.log('💾 Progress is automatically saved to localStorage');
+        console.log('🔗 Use the test page links to navigate to actual testing environments');
+    </script>
+</body>
+</html>
