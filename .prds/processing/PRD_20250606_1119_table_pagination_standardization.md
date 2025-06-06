@@ -133,7 +133,7 @@ interface PaginatedResponse<T> {
    - Use server `meta.total` for pagination
    - Fix `totalPages` calculation
    
-2. [ ] **Returns Table** (`src/app/returns/data/client.tsx`)
+2. [x] **Returns Table** (`src/app/returns/data/client.tsx`)
    - Implement server-side pagination
    - Remove client-side calculations
    
