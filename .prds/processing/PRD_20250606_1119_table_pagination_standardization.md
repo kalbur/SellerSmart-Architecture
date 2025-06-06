@@ -137,14 +137,14 @@ interface PaginatedResponse<T> {
    - Implement server-side pagination
    - Remove client-side calculations
    
-3. [ ] **Inventory Table** (`src/app/inventory/data/client.tsx`)
-   - Verify and fix pagination implementation
+3. [x] **Inventory Table** (`src/app/inventory/data/client.tsx`)
+   - Verify and fix pagination implementation - ✅ ALREADY CORRECT (uses server pagination.total_pages)
    
-4. [ ] **Reimbursements Table** (`src/app/reimbursements/data/client.tsx`)
-   - Standardize pagination approach
+4. [x] **Reimbursements Table** (`src/app/reimbursements/data/client.tsx`)
+   - Standardize pagination approach - ✅ ALREADY CORRECT (uses server pagination.total_pages)
    
-5. [ ] **Removal Orders Table** (`src/app/removal-orders/data/client.tsx`)
-   - Implement consistent pagination
+5. [x] **Removal Orders Table** (`src/app/removal-orders/data/client.tsx`)
+   - Implement consistent pagination - ✅ ENHANCED (added serverSide=true and totalItems to useTablePagination)
 
 ### Phase 3: Feature-Specific Tables
 - [ ] **Wholesale Scanner** (`src/app/wholesale/[taskId]/page.tsx`)
