@@ -10,6 +10,8 @@ The SellerSmart-Backend.InvOrders service has grown significantly complex with s
 4. **Performance Optimization**: Dedicated resources for calculation-intensive operations
 5. **Risk Reduction**: Isolate profitability calculations from SP-API dependencies
 
+**Note**: This will be a **background processor service only** - no API routes required. The service will operate entirely through changestream monitoring and direct database operations.
+
 ## User Needs
 
 1. **Sellers**: Continued access to accurate profitability calculations without service disruption
@@ -116,30 +118,31 @@ The SellerSmart-Backend.InvOrders service has grown significantly complex with s
 - [ ] Test changestream performance under load
 - [ ] Test changestream reconnection logic
 
-#### API Endpoints
-- [ ] Test profit calculation API endpoints
-- [ ] Test COGS management API endpoints
-- [ ] Test VAT management API endpoints
-- [ ] Test bulk operation API endpoints
-- [ ] Test API error handling and validation
-- [ ] Test API authentication and authorization
-- [ ] Test API rate limiting and throttling
+#### Background Processing
+- [ ] Test startup and initialization sequence
+- [ ] Test changestream connection and monitoring
+- [ ] Test background calculation processing
+- [ ] Test error handling and recovery
+- [ ] Test graceful shutdown procedures
+- [ ] Test service health monitoring
+- [ ] Test performance under load
 
 #### Service Integration
-- [ ] Test integration with existing InvOrders service
-- [ ] Test integration with SellerSmart-Web frontend
-- [ ] Test integration with SellerSmart-API gateway
-- [ ] Test cross-service data consistency
-- [ ] Test service communication error handling
+- [ ] Test data consistency with InvOrders database operations
+- [ ] Test cross-service data integrity validation
+- [ ] Test changestream event processing accuracy
+- [ ] Test database transaction handling
+- [ ] Test concurrent processing scenarios
 
 ### Component Tests Required (Service-Level)
 
 - [ ] Test service startup and configuration loading
-- [ ] Test service health check endpoints
-- [ ] Test service graceful shutdown
+- [ ] Test background processor lifecycle management
+- [ ] Test service graceful shutdown and cleanup
 - [ ] Test service logging and monitoring
 - [ ] Test service error tracking and alerting
 - [ ] Test service metrics collection
+- [ ] Test changestream connection management
 
 ### E2E Tests Required
 
@@ -249,15 +252,11 @@ The SellerSmart-Backend.InvOrders service contains a sophisticated profitability
 │   │   └── changestreams/
 │   │       ├── cogs_changestream.py
 │   │       ├── fba_fees_changestream.py
-│   │       └── settlement_changestream.py
-│   ├── api/
-│   │   ├── routes/
-│   │   │   ├── profit_routes.py
-│   │   │   ├── cogs_routes.py
-│   │   │   └── vat_routes.py
-│   │   └── middleware/
-│   │       ├── auth_middleware.py
-│   │       └── validation_middleware.py
+│   │       ├── settlement_changestream.py
+│   │       └── processor_manager.py
+│   ├── processors/
+│   │   ├── profit_processor.py
+│   │   └── background_scheduler.py
 │   ├── shared/
 │   │   ├── database.py
 │   │   ├── config.py
@@ -273,6 +272,7 @@ The SellerSmart-Backend.InvOrders service contains a sophisticated profitability
 ├── requirements.txt
 ├── Dockerfile
 ├── railway.toml
+├── run.py
 └── README.md
 ```
 
@@ -281,18 +281,20 @@ The SellerSmart-Backend.InvOrders service contains a sophisticated profitability
 - **Reference Databases**: `sellersmart_amazon_users` (orders, inventory)
 - **Settings Database**: `sellersmart_app` (VAT settings, user preferences)
 
-#### API Endpoints
-```
-POST /api/v1/profit/calculate - Calculate profit for order items
-GET  /api/v1/profit/order/{order_id} - Get order profitability
-GET  /api/v1/profit/inventory/{sku} - Get inventory profitability
-POST /api/v1/cogs/upsert - Create/update COGS entries
-GET  /api/v1/cogs/{sku} - Get COGS for SKU with date range
-POST /api/v1/vat/register - Update VAT registration period
-GET  /api/v1/vat/status - Get VAT status for date/marketplace
-POST /api/v1/bulk/recalculate - Trigger bulk recalculations
-GET  /api/v1/health - Health check endpoint
-```
+#### Background Processing Architecture
+The service operates as a background processor with the following components:
+
+1. **Changestream Monitors**:
+   - COGS changestream: Monitors cost updates from web app
+   - FBA fees changestream: Monitors fee updates from InvOrders
+   - Settlement changestream: Monitors actual fee updates from InvOrders
+   - Orders changestream: Monitors new orders for initial profit calculation
+
+2. **Processing Pipeline**:
+   - Event detection → Validation → Calculation → Database update
+   - Bulk processing for historical recalculations
+   - Error handling and retry mechanisms
+   - Processing queue management
 
 ### Environment Configuration
 
@@ -315,14 +317,14 @@ MONGO_SOCKET_TIMEOUT_MS=30000
 MONGO_MAX_RETRIES=3
 MONGO_RETRY_DELAY_MS=1000
 
-# API Configuration
-API_PORT=8000
-API_HOST=0.0.0.0
-API_PREFIX=/api/v1
+# Processing Configuration
+PROCESSOR_CONCURRENCY=5
+BATCH_SIZE=100
+RETRY_ATTEMPTS=3
+RETRY_DELAY_SECONDS=5
 
-# SellerSmart API Integration
-SELLERSMART_API_URL=https://api.sellersmart.com
-SELLERSMART_API_KEY=...
+# Health Check (for Railway)
+HEALTH_CHECK_PORT=8080
 
 # Logging and Monitoring
 LOG_LEVEL=INFO
@@ -338,14 +340,12 @@ SENTRY_TRACES_SAMPLE_RATE=0.1
 #### Core Dependencies
 ```
 pymongo==4.5.0
-fastapi==0.104.1
-uvicorn==0.24.0
 python-dotenv==1.0.0
 python-dateutil==2.8.2
-requests==2.31.0
-aiohttp==3.9.5
 sentry-sdk==1.12.1
 pydantic==2.5.0
+asyncio
+threading
 ```
 
 #### Development Dependencies
@@ -439,13 +439,13 @@ pre-commit==3.6.0
 - [ ] Implement error handling and retry logic
 - [ ] Verify all database integration tests pass
 
-#### API Layer
-- [ ] Implement FastAPI application with all endpoints
-- [ ] Implement authentication and authorization middleware
-- [ ] Implement request validation and error handling
-- [ ] Implement rate limiting and throttling
-- [ ] Implement health check and monitoring endpoints
-- [ ] Verify all API integration tests pass
+#### Background Processing Layer
+- [ ] Implement main processor application entry point
+- [ ] Implement processor lifecycle management
+- [ ] Implement graceful shutdown handling
+- [ ] Implement health check endpoint for Railway monitoring
+- [ ] Implement process monitoring and restart logic
+- [ ] Verify all background processing tests pass
 
 #### Changestream Processing
 - [ ] Implement COGS changestream processor
@@ -473,9 +473,9 @@ pre-commit==3.6.0
 
 #### Integration Validation
 - [ ] Validate calculation accuracy against current implementation
-- [ ] Test service integration with InvOrders
-- [ ] Test service integration with SellerSmart-Web
-- [ ] Validate data consistency across service boundary
+- [ ] Test changestream event processing with InvOrders database changes
+- [ ] Test data consistency between services
+- [ ] Validate profit calculation results match existing system
 - [ ] Test error handling and graceful degradation
 
 ### Phase 4: Deployment and Migration
@@ -488,11 +488,11 @@ pre-commit==3.6.0
 - [ ] Test service scaling and performance
 
 #### Migration Execution
-- [ ] Update InvOrders to call Profit service APIs
-- [ ] Implement feature flags for gradual rollout
-- [ ] Monitor service performance and error rates
-- [ ] Validate calculation accuracy in production
-- [ ] Complete migration and remove feature flags
+- [ ] Deploy Profit service alongside InvOrders
+- [ ] Monitor changestream processing and calculation accuracy
+- [ ] Gradually remove profitability code from InvOrders
+- [ ] Validate all calculations continue working correctly
+- [ ] Complete migration and cleanup old code
 
 #### Cleanup
 - [ ] Remove profitability code from InvOrders service
@@ -524,9 +524,9 @@ pre-commit==3.6.0
 
 ### Performance Requirements
 - [ ] Calculation performance matches or exceeds current implementation
-- [ ] API response times under 200ms for single calculations
+- [ ] Changestream event processing latency under 1 second
 - [ ] Bulk operations complete within existing time constraints
-- [ ] Changestream processing latency under 1 second
+- [ ] Background processing handles expected load without backlog
 - [ ] Database connection pooling prevents connection exhaustion
 
 ### Quality Requirements
@@ -537,11 +537,12 @@ pre-commit==3.6.0
 - [ ] Error handling provides appropriate user feedback
 
 ### Operational Requirements
-- [ ] Service deploys successfully with zero downtime
-- [ ] Health checks and monitoring provide adequate visibility
+- [ ] Service deploys successfully as background processor
+- [ ] Health checks provide adequate visibility for Railway monitoring
 - [ ] Error tracking and alerting function correctly
-- [ ] Service scales horizontally under load
+- [ ] Service handles processing load without manual intervention
 - [ ] Database operations maintain transaction integrity
+- [ ] Graceful startup and shutdown procedures work correctly
 
 ### Business Requirements
 - [ ] No disruption to user access to profitability data

@@ -1,4 +1,4 @@
-# PRD_20250612_1611_single_session_per_user
+# PRD_20250612_1611_single_session_per_user - IN_PROGRESS
 
 ### Problem Statement
 SellerSmart-Web currently allows multiple concurrent sessions per user, which presents security risks and potential account sharing violations. The platform needs to enforce a single session per user policy to enhance security, prevent unauthorized access, and ensure compliance with the subscription terms that prohibit account sharing outside of business organizations.

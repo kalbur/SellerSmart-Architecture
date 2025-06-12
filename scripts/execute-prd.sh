@@ -33,21 +33,61 @@ execute_prd() {
 #!/bin/bash
 cd /Users/kal/GitHub/SellerSmart-Architecture
 
-# Execute PRD with Claude
+# Execute PRD with Claude - TDD WORKFLOW
 claude --dangerously-skip-permissions "You are in: /Users/kal/GitHub/SellerSmart-Architecture
 
-## EXECUTING PRD: $prd_id
+## EXECUTING PRD: $prd_id - TEST-DRIVEN DEVELOPMENT WORKFLOW
 
-## TASK: Implement this PRD completely
+## TASK: Implement this PRD using strict TDD methodology
 
-1. Read the PRD: read_file('.prds/processing/$prd_id.md')
-2. Update status to IN_PROGRESS
-3. Navigate to affected service repositories
-4. Create feature branches as needed
-5. Implement all checklist items
-6. Run all quality checks (lint, tests, build)
-7. Mark items complete as you go: - [ ] → - [x]
-8. Move PRD to completed when ALL items are done
+### TDD WORKFLOW (MANDATORY ORDER):
+1. **Read PRD**: read_file('.prds/processing/$prd_id.md')
+2. **Update status**: Mark as IN_PROGRESS
+3. **Navigate**: Go to affected service repositories
+4. **Create branches**: Create feature branches as needed
+
+### PHASE 1: WRITE TESTS FIRST (NO IMPLEMENTATION YET)
+5. **Write ALL tests first**:
+   - Unit tests for all business logic
+   - Integration tests for all endpoints
+   - Component tests for UI elements
+   - E2E tests for user flows
+6. **Run tests to verify they FAIL**:
+   - All tests MUST fail initially
+   - This confirms tests are testing the right things
+   - Document which tests are failing and why
+
+### PHASE 2: IMPLEMENT WITH TDD CYCLE
+7. **For each failing test**:
+   - Write MINIMUM code to make test pass
+   - Run test to verify it passes
+   - Refactor if needed (keep test green)
+   - Check coverage incrementally
+8. **Coverage checks**:
+   - Run coverage after each test passes
+   - Aim for 100% coverage
+   - Document any legitimate exclusions
+
+### PHASE 3: QUALITY ASSURANCE
+9. **Run all quality checks**:
+   - ESLint/Flake8 must pass
+   - TypeScript/MyPy must pass
+   - All tests must pass
+   - Coverage must be 100% (or documented exceptions)
+   - Build must succeed
+10. **Final verification**:
+    - Run full test suite
+    - Generate coverage report
+    - Ensure no regressions
+
+### PHASE 4: COMPLETION
+11. **Documentation**:
+    - Update README with test examples
+    - Document how to run tests
+    - Include coverage commands
+12. **Mark complete**:
+    - Update checklist items: - [ ] → - [x]
+    - Move PRD to completed when ALL done
 
 ## SERVICE REPOSITORIES
 - /Users/kal/GitHub/SellerSmart-API
@@ -59,13 +99,31 @@ claude --dangerously-skip-permissions "You are in: /Users/kal/GitHub/SellerSmart
 - /Users/kal/GitHub/SellerSmart-Backend.RapReview
 - /Users/kal/GitHub/SellerSmart-SiteMonitor
 
-## QUALITY CHECKS REQUIRED
-- ESLint/Flake8 must pass
-- TypeScript/MyPy must pass
-- All tests must pass
-- Build must succeed
+## TEST COMMANDS BY SERVICE TYPE
+### Python Services (pytest):
+- Run tests: pytest
+- With coverage: pytest --cov=. --cov-report=html --cov-report=term
+- Coverage report: coverage report -m
 
-Start by reading the PRD file."
+### Node.js Services (Jest):
+- Run tests: npm test
+- With coverage: npm run test:coverage
+- Watch mode: npm run test:watch
+
+### React Components:
+- Run tests: npm test
+- Coverage: npm run test:coverage
+- Component tests: npm run test:components
+
+## IMPORTANT TDD RULES
+1. NO implementation code until tests are written
+2. Tests MUST fail before implementation
+3. Write MINIMUM code to pass each test
+4. Refactor only with green tests
+5. 100% coverage is mandatory
+6. Document any coverage exclusions
+
+Start by reading the PRD file and understanding the test requirements."
 EOF
     
     # Make the wrapper script executable
@@ -142,13 +200,20 @@ else
     done
     
     echo -e "\n${GREEN}✓ All PRDs are now being executed in separate terminals${NC}"
-    echo -e "${YELLOW}Each Claude instance will:${NC}"
-    echo -e "  • Read and analyze its PRD"
-    echo -e "  • Implement all requirements"
-    echo -e "  • Run all tests and linting"
-    echo -e "  • Fix any issues before completion"
-    echo -e "  • Mark checklist items as complete"
-    echo -e "  • Move PRD to completed when done"
+    echo -e "${YELLOW}Each Claude instance will follow TDD workflow:${NC}"
+    echo -e "  ${CYAN}Phase 1: Test Writing${NC}"
+    echo -e "    • Write ALL tests before any implementation"
+    echo -e "    • Verify tests fail correctly"
+    echo -e "  ${CYAN}Phase 2: Implementation${NC}"
+    echo -e "    • Write minimum code to pass each test"
+    echo -e "    • Refactor with green tests"
+    echo -e "  ${CYAN}Phase 3: Quality${NC}"
+    echo -e "    • Run all linting and type checks"
+    echo -e "    • Verify 100% test coverage"
+    echo -e "  ${CYAN}Phase 4: Completion${NC}"
+    echo -e "    • Update documentation"
+    echo -e "    • Mark checklist items complete"
+    echo -e "    • Move PRD to completed"
     echo -e "${CYAN}Note: Temporary wrapper scripts will be cleaned up automatically${NC}"
 fi
 

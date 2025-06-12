@@ -32,7 +32,7 @@ if ! command -v claude &> /dev/null; then
 fi
 
 # Run the PRD creation command
-claude --dangerously-skip-permissions "# CLAUDE CODE PLANNING PHASE (NO CODING)
+claude --dangerously-skip-permissions "# CLAUDE CODE PLANNING PHASE (NO CODING) - TDD WORKFLOW
 
 ## CURRENT LOCATION
 You are in: /Users/kal/GitHub/SellerSmart-Architecture
@@ -43,6 +43,24 @@ You are in: /Users/kal/GitHub/SellerSmart-Architecture
 - Create comprehensive PRD with unique ID format: PRD_${TIMESTAMP}_{feature_slug}
 - Each feature gets its own dedicated PRD
 - Save PRD in .prds/processing/ directory
+- **MANDATORY: Include Test-Driven Development (TDD) specifications**
+- **Reference PRD-TEMPLATE-TDD.md for structure**
+
+## TEST-DRIVEN DEVELOPMENT REQUIREMENTS
+Every PRD MUST include:
+1. **Test Specifications Section**: Define all test cases BEFORE implementation details
+2. **Coverage Targets**: Specify 100% test coverage requirement
+3. **Test Categories**:
+   - Unit Tests: For all business logic
+   - Integration Tests: For all API endpoints
+   - Component Tests: For all UI components
+   - E2E Tests: For critical user flows
+4. **Test Examples**: Include specific test scenarios with expected behavior
+5. **Test Framework**: Specify which testing framework to use:
+   - Python: pytest with coverage.py
+   - Node.js: Jest with coverage reports
+   - React: React Testing Library + Jest
+   - E2E: Playwright or Cypress
 
 ## PROJECT STRUCTURE
 All SellerSmart repositories are located at: /Users/kal/GitHub/
@@ -83,7 +101,12 @@ All SellerSmart repositories are located at: /Users/kal/GitHub/
    - Check if external APIs are involved → Use Context7
    - Check if MongoDB is used → Use MongoDB Atlas tools
    - Use Repomix to analyze codebase structure first
-4. **COMPREHENSIVE CODEBASE ASSESSMENT:**
+4. **TEST PLANNING (TDD):**
+   - Define test scenarios for each requirement
+   - Specify test data and expected outcomes
+   - Identify edge cases and error scenarios
+   - Plan test structure and organization
+5. **COMPREHENSIVE CODEBASE ASSESSMENT:**
    - Use Repomix output to understand project structure quickly
    - Navigate to service directories: cd /Users/kal/GitHub/SellerSmart-{service}
    - Identify similar existing modules/components for consistency
@@ -91,19 +114,34 @@ All SellerSmart repositories are located at: /Users/kal/GitHub/
    - Extract code examples from similar implementations
    - Document architectural patterns and dependencies
    - Note styling/naming conventions used in codebase
-5. Create detailed PRD file in .prds/processing/ with:
+   - **Review existing test patterns and conventions**
+6. Create detailed PRD file in .prds/processing/ with:
    - Problem statement & user needs
    - **MCP Tools Used Section:**
      - List which MCP tools were consulted
      - Key findings from each tool
+   - **TEST SPECIFICATIONS (TDD):**
+     - Comprehensive test scenarios (MUST come before implementation)
+     - Unit test specifications with examples
+     - Integration test requirements
+     - Component test requirements (if UI involved)
+     - E2E test scenarios (if applicable)
+     - Coverage targets (minimum 100%)
+     - Test data requirements
    - **Codebase Analysis Section:**
      - Similar existing implementations (with file paths)
      - Code examples to follow for consistency
      - Relevant utilities/helpers to reuse
      - Architectural patterns to maintain
+     - **Existing test patterns to follow**
    - Technical requirements with references to existing code
    - Implementation checklist (comprehensive, referencing similar modules)
-   - Test strategy (following existing test patterns)
+   - **TDD Implementation Order:**
+     1. Write failing tests
+     2. Verify tests fail correctly
+     3. Implement minimum code to pass
+     4. Refactor while keeping tests green
+     5. Verify 100% coverage
    - Success criteria
 
 ## CODEBASE EXPLORATION CHECKLIST
@@ -114,9 +152,13 @@ All SellerSmart repositories are located at: /Users/kal/GitHub/
 - [ ] Explore src/ or main code directories
 - [ ] Find components/modules similar to requested feature
 - [ ] Identify shared utilities and patterns
-- [ ] Review test structure and conventions
+- [ ] **Review test structure and conventions**
+- [ ] **Analyze existing test coverage patterns**
+- [ ] **Identify test utilities and helpers**
+- [ ] **Document test naming conventions**
 - [ ] Document styling/naming patterns
 - [ ] Extract relevant code examples for reference
+- [ ] **Extract test examples for reference**
 
 ## BRANCHING
 - Check current branch with \`execute_command(\"git branch --show-current\")\`
@@ -127,6 +169,8 @@ All SellerSmart repositories are located at: /Users/kal/GitHub/
 - Print \"PRD CREATION COMPLETE\" 
 - Print exact PRD ID created
 - List MCP tools that were used in the analysis
+- **Confirm TDD test specifications are included**
+- **Verify coverage targets are specified (100%)**
 - Add PRD to git with \`execute_command(\"git add .prds/processing/*.md\")\`"
 
 echo -e "${GREEN}PRD creation process started!${NC}"
